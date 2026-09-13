@@ -978,6 +978,36 @@ class AIQLExecutor:
                     return self._wrap_result(nodes=formatted, data={"query_type": "SELECT", "filter": f"{prop_name}={prop_val}"}, success=True)
                 return self._wrap_result(nodes=[], success=True)
 
+            # MATCH NODE <Label> WHERE <prop> = "<value>" — property filter by label
+            _m = _re.match(r'MATCH\s+NODE\s+(\w+)\s+WHERE\s+(.+?)\s*;?\s*$', query.strip(), _re.IGNORECASE | _re.DOTALL)
+            if _m:
+                label = _m.group(1)
+                where_raw = _m.group(2)
+                graph = self._get_namespace_graph(namespace)
+                if graph:
+                    all_nodes = graph.get_all_nodes()
+                    # Parse WHERE conditions: prop = "value" AND prop2 = "value2"
+                    conditions = {}
+                    for cm in _re.finditer(r'(\w+)\s*=\s*"([^"]*)"', where_raw):
+                        conditions[cm.group(1)] = cm.group(2)
+                    for cm in _re.finditer(r'(\w+)\s*=\s*(\d+(?:\.\d+)?)\b', where_raw):
+                        if cm.group(1) not in conditions:
+                            v = cm.group(2)
+                            conditions[cm.group(1)] = float(v) if '.' in v else int(v)
+
+                    filtered = []
+                    for n in all_nodes:
+                        nlabel = getattr(n, 'label', '') or ''
+                        if nlabel.lower() != label.lower():
+                            continue
+                        props = getattr(n, 'properties', {}) or {}
+                        match = all(str(props.get(k, '')).lower() == str(v).lower() for k, v in conditions.items())
+                        if match:
+                            filtered.append(n)
+                    formatted = [self._format_node_for_display(n) for n in filtered]
+                    return self._wrap_result(nodes=formatted, data={"query_type": "MATCH", "node_type": label, "where": conditions}, success=True)
+                return self._wrap_result(nodes=[], data={"query_type": "MATCH", "node_type": label}, success=True)
+
             # SHOW GRAPHS — list available namespaces
             if query_upper in ('SHOW GRAPHS', 'SHOW GRAPHS;'):
                 graphs_list = self.graph_registry.list_graphs() if self.graph_registry else []

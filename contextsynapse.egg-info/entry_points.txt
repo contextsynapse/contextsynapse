@@ -1,0 +1,4 @@
+[console_scripts]
+contextsynapse = contextsynapse.cli:main
+contextsynapse-demo = scripts.demo_session:main
+contextsynapse-ingest = scripts.ingest_repo:main
