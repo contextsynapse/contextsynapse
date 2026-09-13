@@ -1,0 +1,403 @@
+# Knowledge Graph Schema for AIContextDB
+# Schema-driven automatic graph construction
+# Comprehensive multimodal schema with all node and edge types
+
+NAMESPACE: ai_knowledge_graph
+VERSION: 2.0
+DESCRIPTION: >
+  Unified AI-native knowledge graph schema for multi-modal, multi-source,
+  and temporal data. Designed for automatic node/edge creation and
+  RAG-ready hierarchical traversal. Supports PDF, web, audio, video, and temporal data.
+
+COLLECTIONS:
+  - sources
+  - documents
+  - tables
+  - images
+  - voices
+  - videos
+  - webpages
+  - chunks
+  - embeddings
+  - entities
+  - timesequences
+  - websnapshots
+
+# Node Definitions
+NODES:
+  Source:
+    description: Root node representing any ingested origin.
+    collection: sources
+    fields:
+      source_id: string!
+      source_type: enum("pdf","doc","xls","csv","json","web","api","db","stream","temporal","news")
+      location: string
+      crawl_depth: int
+      metadata: json
+      created_at: datetime
+    indexes:
+      - source_type
+      - location
+      - created_at
+
+  Document:
+    description: Generic textual or file-based document node.
+    collection: documents
+    fields:
+      doc_id: string!
+      title: string
+      text: string
+      source: string
+      metadata: json
+      created_at: datetime
+      embedding: vector[3072]
+    indexes:
+      - title
+      - source
+      - created_at
+
+  Table:
+    description: Structured data extracted from documents, spreadsheets, CSVs, or DBs.
+    collection: tables
+    fields:
+      table_id: string!
+      title: string
+      headers: array
+      rows: array
+      schema: json
+      source_doc: string
+      metadata: json
+      embedding: vector[1024]
+      confidence: float
+    indexes:
+      - title
+      - source_doc
+      - confidence
+
+  Image:
+    description: Image asset, optionally with OCR or caption.
+    collection: images
+    fields:
+      image_id: string!
+      caption: string
+      description: string
+      path: string
+      metadata: json
+      embedding: vector[1536]
+      thumbnail: binary
+      ocr_text: string
+    indexes:
+      - path
+      - caption
+
+  Voice:
+    description: Audio/voice recording node with transcript.
+    collection: voices
+    fields:
+      voice_id: string!
+      speaker: string
+      transcript: string
+      audio_path: string
+      duration: float
+      language: string
+      metadata: json
+      embedding: vector[512]
+    indexes:
+      - speaker
+      - language
+      - duration
+
+  Video:
+    description: Video asset with transcript and frame data.
+    collection: videos
+    fields:
+      video_id: string!
+      title: string
+      description: string
+      frames: array
+      transcript: string
+      video_path: string
+      metadata: json
+      embedding: vector[1024]
+    indexes:
+      - title
+      - video_path
+
+  WebPage:
+    description: Web resource or crawled page.
+    collection: webpages
+    fields:
+      page_id: string!
+      url: string!
+      domain: string
+      title: string
+      content_type: string
+      status_code: int
+      text: string
+      metadata: json
+      fetched_at: datetime
+      embedding: vector[1536]
+    indexes:
+      - url
+      - domain
+      - fetched_at
+
+  Chunk:
+    description: Minimal semantic retrieval unit across modalities.
+    collection: chunks
+    fields:
+      chunk_id: string!
+      parent_id: string
+      parent_type: string
+      order: int
+      previous_id: string
+      next_id: string
+      level: int
+      content: string
+      modality: enum("text","table","image","voice","video")
+      metadata: json
+      created_at: datetime
+      embedding: vector[1536]
+    indexes:
+      - parent_id
+      - parent_type
+      - modality
+      - created_at
+
+  TimeSequence:
+    description: Temporal/log/event/news node.
+    collection: timesequences
+    fields:
+      sequence_id: string!
+      source_id: string
+      timestamp: datetime
+      sequence_no: int
+      previous_id: string
+      next_id: string
+      category: enum("log","news","event","sensor")
+      title: string
+      text: string
+      data: json
+      metadata: json
+      embedding: vector[1024]
+    indexes:
+      - timestamp
+      - category
+      - sequence_no
+
+  WebSnapshot:
+    description: Versioned snapshot of a web page.
+    collection: websnapshots
+    fields:
+      snapshot_id: string!
+      page_id: string!
+      version_no: int
+      fetched_at: datetime
+      diff_hash: string
+      changes: json
+      metadata: json
+    indexes:
+      - page_id
+      - version_no
+      - fetched_at
+
+  Embedding:
+    description: Externalized embedding record for vector search.
+    collection: embeddings
+    fields:
+      emb_id: string!
+      node_id: string!
+      modality: string
+      model: string
+      dim: int
+      vector: vector[]
+      last_updated: datetime
+    indexes:
+      - node_id
+      - modality
+      - last_updated
+
+  Entity:
+    description: Named entity extracted from text using NLP/LLM.
+    collection: entities
+    fields:
+      entity_id: string!
+      entity_name: string!
+      entity_type: string!
+      description: string
+      metadata: json
+      source_chunk: string
+    indexes:
+      - entity_name
+      - entity_type
+      - source_chunk
+
+# Edge Definitions
+EDGES:
+  SOURCE_OF:
+    from: Source
+    to: [Document, Table, Image, Voice, Video, WebPage, TimeSequence]
+    relation: "source_contains"
+
+  # Hierarchy
+  PARENT_OF:
+    from: [Source, Document, Table, Image, Video, WebPage, Chunk]
+    to: [Document, Table, Image, Voice, Video, WebPage, Chunk]
+    relation: "contains"
+    order: int
+    context_role: string
+
+  CHILD_OF:
+    from: [Document, Table, Image, Voice, Video, WebPage, Chunk]
+    to: [Source, Document, Table, Image, Video, WebPage, Chunk]
+    relation: "is_child_of"
+    inverse_of: PARENT_OF
+
+  # Sequential / Temporal
+  NEXT:
+    from: [Chunk, TimeSequence]
+    to: [Chunk, TimeSequence]
+    relation: "next_in_sequence"
+    order: int
+    time_gap: float
+
+  PREVIOUS:
+    from: [Chunk, TimeSequence]
+    to: [Chunk, TimeSequence]
+    relation: "previous_in_sequence"
+    inverse_of: NEXT
+
+  # Web Graph
+  CHILD_PAGE:
+    from: WebPage
+    to: WebPage
+    relation: "child_url"
+
+  LINKS_TO:
+    from: WebPage
+    to: WebPage
+    relation: "hyperlink"
+    anchor_text: string
+    link_type: enum("internal","external")
+    confidence: float
+
+  SNAPSHOT_OF:
+    from: WebSnapshot
+    to: WebPage
+    relation: "snapshot_of"
+
+  PREVIOUS_VERSION:
+    from: WebSnapshot
+    to: WebSnapshot
+    relation: "previous_version"
+
+  # Cross-modal semantic edges
+  EMBEDS:
+    from: [Document, WebPage, Video]
+    to: [Table, Image, Voice, Video, Chunk]
+    relation: "embeds_content"
+
+  DERIVED_FROM:
+    from: [Chunk, Table, Image, Voice, Video, WebPage, TimeSequence]
+    to: [Source, Document, WebPage]
+    relation: "derived_from"
+
+  REFERS_TO:
+    from: [Document, Chunk, Table, Image, WebPage, TimeSequence]
+    to: [Document, Chunk, Table, Image, WebPage, TimeSequence]
+    relation: "semantic_reference"
+    confidence: float
+
+  CAPTION_OF:
+    from: Chunk
+    to: Image
+    relation: "caption_of"
+
+  TRANSCRIPT_OF:
+    from: Chunk
+    to: Voice
+    relation: "transcript_of"
+
+  FRAME_OF:
+    from: Chunk
+    to: Video
+    relation: "frame_of"
+
+  MENTIONS:
+    from: [Chunk, Document]
+    to: [Entity]
+    relation: "mentions_entity"
+
+  RELATED_TO:
+    from: [Entity]
+    to: [Entity]
+    relation: "related_to"
+
+  HAS_RELATIONSHIP:
+    from: [Entity]
+    to: [Entity]
+    relation: "has_relationship"
+
+# Pipeline Rules
+PIPELINE_RULES:
+  auto_uuid: true
+  auto_chunk: true
+  auto_embed: true
+  auto_wire_edges: true
+  allow_cross_collection_links: true
+  hierarchy_enabled: true
+
+# ==========================================================
+# INGESTION MAPPINGS (example patterns)
+# ==========================================================
+INGESTION_MAP:
+  pdf:
+    creates: [Source, Document, Table, Image, Chunk]
+    edges: [SOURCE_OF, PARENT_OF, EMBEDS]
+    chunk_level: paragraph
+  
+  docx:
+    creates: [Source, Document, Table, Chunk]
+    edges: [SOURCE_OF, PARENT_OF]
+  
+  xls:
+    creates: [Source, Table]
+    edges: [SOURCE_OF]
+  
+  csv:
+    creates: [Source, Table]
+    edges: [SOURCE_OF]
+  
+  json:
+    creates: [Source, Document]
+    edges: [SOURCE_OF]
+  
+  web:
+    creates: [Source, WebPage, Document, Table, Image, Chunk]
+    edges: [SOURCE_OF, CHILD_PAGE, LINKS_TO, EMBEDS]
+  
+  log:
+    creates: [Source, TimeSequence]
+    edges: [SOURCE_OF, NEXT]
+  
+  news:
+    creates: [Source, TimeSequence]
+    edges: [SOURCE_OF, NEXT]
+  
+  api:
+    creates: [Source, Document, Table, TimeSequence]
+    edges: [SOURCE_OF]
+  
+  db:
+    creates: [Source, Table]
+    edges: [SOURCE_OF]
+
+# ==========================================================
+# VERSIONING / DELTA / HASH FIELDS (optional)
+# ==========================================================
+GLOBAL_FIELDS:
+  version_no: int
+  valid_from: datetime
+  valid_to: datetime
+  sdh: string       # semantic delta hash
+  lineage_id: string

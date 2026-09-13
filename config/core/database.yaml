@@ -1,0 +1,102 @@
+# ============================================================================
+# AIContextDB Database Configuration
+# Core database, performance, optimization, and storage settings
+# Similar to PostgreSQL (postgresql.conf), MySQL (my.cnf), MongoDB (mongod.conf)
+# ============================================================================
+
+database_name: contextsynapse
+database_version: 1.0.0
+
+# ============================================================================
+# PERFORMANCE CONFIGURATION
+# ============================================================================
+performance:
+  # Graph Database Settings
+  default_engine: "csr"                # Graph engine: csr (NetworkX disabled - CSR-only mode)
+  auto_index: true                    # Enable automatic indexing
+  cache_size: 1000                    # Cache size (number of items)
+  
+  # Graph Operations
+  max_nodes_in_memory: 1000000        # Max nodes before spilling to disk
+  max_edges_in_memory: 5000000        # Max edges before spilling to disk
+  cache_size_mb: 512                  # Cache size in MB
+  enable_query_cache: true             # Enable query result caching
+  csr_auto_switch_threshold: 1000
+  csr_enabled: true
+  buffer_enabled: true
+  buffer_type: local
+  buffer_max_size: 1000
+  buffer_flush_interval: 2.0
+  buffer_batch_size: 100
+  buffer_auto_flush: true
+  buffer_flush_threshold: 0.7
+  buffer_threshold_flush_enabled: true
+  vector_batch_size: 1000
+  vector_index_type: flat
+  max_workers: 4
+  enable_parallel_queries: true
+  gc_threshold: 10000
+  enable_auto_gc: true
+  wal_enabled: true
+  wal_dir: ./contextsynapse_wal
+  wal_max_size_mb: 100
+  wal_checkpoint_interval: 1000
+  wal_sync_interval: 1.0
+  wal_compression: true
+  wal_background_flush: true
+  persistence_mode: wal
+  background_save_threshold: 10000
+  immediate_persistence: true
+
+# ============================================================================
+# STORAGE CONFIGURATION
+# ============================================================================
+storage:
+  strategy: "single_file"              # single_file, multi_file_optimized, multi_file_legacy
+  format: "hdf5"                      # hdf5, json, parquet
+  compression: "gzip"                 # gzip, lz4, snappy, none
+  compression_level: 6                # 0-9
+  enable_metadata: true
+  enable_csr: true
+  chunk_size: null                    # null = auto
+
+# ============================================================================
+# TRACEABILITY CONFIGURATION
+# ============================================================================
+traceability:
+  enabled: false
+  blockchain_enabled: false
+  merkle_tree_enabled: false
+  audit_trail_enabled: false
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

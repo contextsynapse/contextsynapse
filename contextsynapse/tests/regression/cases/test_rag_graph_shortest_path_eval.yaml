@@ -1,0 +1,35 @@
+id: test_rag_graph_shortest_path_eval_001
+name: RAG Graph Shortest Path - With Evaluation Metrics
+description: 'Tests RAG query with shortest path traversal:
+
+  - Finds optimal paths between concepts
+
+  - Efficient context linking
+
+  - Evaluation of path quality
+
+
+  Uses GPT-3.5-Turbo with custom prompt and embedding model.
+
+  '
+namespace: rag_regression_test_graph
+expected_success: true
+tags:
+- rag
+- graph_search
+- shortest_path
+- evaluation
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: 'Tests shortest path traversal with evaluation.
+
+  Measures path quality and efficiency.
+
+  '
+query: ''
+priority: 5
+prerequisites:
+- RUN_INGESTION_PIPELINE
+requires_data: true
+requires_files: []

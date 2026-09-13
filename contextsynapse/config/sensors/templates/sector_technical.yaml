@@ -1,0 +1,47 @@
+template_name: Sector Technical
+description: "Sector-level RSI, advance/decline breadth, relative strength vs Nifty — where is sector rotation happening?"
+category: technical
+scope: sector
+tags: [technical, sector, momentum, breadth, rsi]
+recommended_for: [equity]
+
+sensors:
+  - name: sector_rsi
+    label: Sector RSI
+    description: "Relative Strength Index at sector level — overbought/oversold"
+    impact_type: direct
+    decay_profile: exponential
+    scope: sector
+    weight: 0.75
+
+  - name: advance_decline
+    label: Advance/Decline Breadth
+    description: "How many stocks in the sector are advancing vs declining"
+    impact_type: direct
+    decay_profile: exponential
+    scope: sector
+    weight: 0.7
+
+  - name: sector_momentum
+    label: Sector Momentum Score
+    description: "Price momentum over 1W, 1M, 3M windows relative to index"
+    impact_type: direct
+    decay_profile: linear
+    scope: sector
+    weight: 0.8
+
+  - name: relative_strength
+    label: Relative Strength vs Nifty
+    description: "Sector performance vs benchmark — alpha / beta positioning"
+    impact_type: latent
+    decay_profile: linear
+    scope: sector
+    weight: 0.7
+
+pipeline:
+  connector: api
+  sources:
+    - nse_indices
+    - yahoo_finance
+  schedule: "0 */1 * * *"
+  enrichment: fact_extraction

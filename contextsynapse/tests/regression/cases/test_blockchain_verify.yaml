@@ -1,0 +1,35 @@
+id: test_blockchain_001
+name: Blockchain - Verify Blockchain Integrity
+description: 'Tests VERIFY BLOCKCHAIN query to verify blockchain integrity.
+
+  Requires traceability to be enabled.
+
+  '
+query: 'CREATE NODE TestNode { name: "test_node_1", value: 100 };
+
+  CREATE NODE TestNode { name: "test_node_2", value: 200 };
+
+
+  VERIFY BLOCKCHAIN'
+namespace: blockchain_test
+expected_success: true
+tags:
+- blockchain
+- traceability
+- verify
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: 'Tests VERIFY BLOCKCHAIN query.
+
+  Requires traceability to be enabled in graph configuration.
+
+  Verifies blockchain integrity after creating nodes.
+
+  '
+skip: true
+skip_reason: Traceability layer not enabled in default configuration
+priority: 6
+prerequisites: []
+requires_data: false
+requires_files: []

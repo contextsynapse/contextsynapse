@@ -1,0 +1,40 @@
+id: test_eval_002
+name: Evaluation - NDCG (Normalized Discounted Cumulative Gain)
+description: 'Tests NDCG evaluation metric.
+
+  Measures ranking quality considering position.
+
+
+  Evaluation flow:
+
+  1. Execute RAG query
+
+  2. Get relevance scores
+
+  3. Calculate NDCG@k
+
+  4. Report scores
+
+  '
+namespace: regression_test
+expected_success: true
+query: ''
+tags:
+- evaluation
+- ndcg
+- ranking
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: 'Tests NDCG evaluation metric.
+
+  Measures ranking quality with position discounting.
+
+  Uses explicit embedding model.
+
+  '
+priority: 5
+prerequisites:
+- RUN_INGESTION_PIPELINE
+requires_data: true
+requires_files: []

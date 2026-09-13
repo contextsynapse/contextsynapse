@@ -1,0 +1,34 @@
+id: test_rag_005
+name: RAG Query - Path-Based Graph Search
+description: 'Tests RAG query with path-based graph search:
+
+  - Finds specific paths between entities
+
+  - Uses path patterns for context
+
+  - Combines paths with vector search
+
+
+  Uses GPT-3.5-Turbo with custom prompt and embedding model.
+
+  '
+query: RAG "How is TCS connected to Microsoft?" AT NAMESPACE regression_test
+namespace: regression_test_graph
+expected_success: true
+tags:
+- rag
+- graph_search
+- path_based
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: 'Tests RAG query for path-based relationship discovery.
+
+  Note: Path finding should be configured via pipeline.
+
+  '
+priority: 5
+prerequisites:
+- RUN_INGESTION_PIPELINE
+requires_data: true
+requires_files: []

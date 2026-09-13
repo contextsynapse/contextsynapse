@@ -1,0 +1,28 @@
+id: test_004
+name: CREATE EDGE - Basic (Query-Scoped Aliases)
+description: Tests edge creation using query-scoped aliases within a single query
+query: |
+  CREATE NODE TestNode AS source_node { name: "edge_test_source" };
+  CREATE NODE TestNode AS target_node { name: "edge_test_target" };
+  CREATE EDGE CONNECTS SRC source_node DEST target_node { weight: 1.0 }
+namespace: regression_test
+expected_success: true
+expected_nodes: 0
+expected_edges: 1
+tags:
+- basic
+- create
+- edge
+- query_scoped_aliases
+verify_persistence: true
+test_both_modes: true
+approved_by: system
+notes: |
+  Tests edge creation using query-scoped aliases (AS clause).
+  Aliases exist only during query execution and are not persisted.
+  This demonstrates the query-scoped alias pattern where CREATE NODE AS alias
+  and CREATE EDGE can reference those aliases within the same query.
+priority: 2
+prerequisites: []
+requires_data: false
+requires_files: []

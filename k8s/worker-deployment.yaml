@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: contextsynapse-worker
+  namespace: contextsynapse
+  labels:
+    app: contextsynapse
+    component: worker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: contextsynapse
+      component: worker
+  template:
+    metadata:
+      labels:
+        app: contextsynapse
+        component: worker
+    spec:
+      containers:
+        - name: worker
+          image: contextsynapse/api:latest
+          command: ["python", "-m", "contextsynapse.ingestion.worker_queue", "--workers", "2"]
+          envFrom:
+            - configMapRef:
+                name: contextsynapse-config
+            - secretRef:
+                name: contextsynapse-secrets
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "4Gi"
+              cpu: "2"
+          # Workers need more memory for LLM extraction + embedding batches
+          volumeMounts:
+            - name: graph-cache
+              mountPath: /app/contextsynapse_data
+      volumes:
+        - name: graph-cache
+          emptyDir:
+            sizeLimit: 10Gi

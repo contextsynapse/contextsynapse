@@ -1,0 +1,54 @@
+name: Government Policy
+description: "Indian government policy changes — budget, taxation, PLI schemes, regulatory changes"
+type: event
+version: "1.0"
+active: true
+
+connector:
+  type: rss
+  sources:
+    - "https://economictimes.indiatimes.com/rssfeedsdefault.cms"
+    - "https://www.livemint.com/rss/economy"
+    - "https://www.moneycontrol.com/rss/economy.xml"
+  schedule: "0 */4 * * *"
+  poll_interval_minutes: 240
+  filter:
+    topics:
+      - government policy
+      - PLI scheme
+      - budget
+      - GST
+      - taxation
+      - import duty
+      - export ban
+      - FDI
+      - disinvestment
+      - Make in India
+      - Atmanirbhar
+      - DPIIT
+    exclude:
+      - cricket
+      - entertainment
+
+schema:
+  node_type: PolicySignal
+  fields:
+    policy_type: { type: string }
+    ministry: { type: string }
+    impact: { type: enum, values: [positive, negative, neutral] }
+    affected_sectors: { type: string }
+  extraction_strategy: news_article
+
+hierarchy:
+  affects_sectors: ["Infrastructure", "Auto", "Pharma", "Energy", "Banking"]
+  upstream_of: "India Economy"
+  weight: 0.7
+  level: country
+
+decay:
+  rate: 0.02
+  profile: slow
+
+relevance:
+  sectors: ["Infrastructure", "Auto", "Pharma", "Energy", "Banking", "FMCG"]
+  keywords: ["policy", "PLI", "budget", "tax", "subsidy", "regulation"]

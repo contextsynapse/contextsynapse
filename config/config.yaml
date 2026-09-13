@@ -1,0 +1,70 @@
+# AIContextDB Application Configuration File
+# Application-level settings: LLMs, search, embeddings, API server
+# 
+# NOTE: Database, performance, optimization, and storage settings are in:
+#       - contextsynapse.conf (main database configuration file)
+#       This file is ONLY for application-level settings.
+
+# Search Configuration
+search:
+  hybrid_enabled: true
+  semantic_weight: 0.7
+  keyword_weight: 0.3
+  graph_weight: 0.4
+  max_results: 100
+  rerank_top_k: 20
+
+# Embedding Settings
+embeddings:
+  provider: "local"  # "local" or "watsonx"
+  model: "all-MiniLM-L6-v2"
+  dimension: 384
+  batch_size: 32
+  
+  # WatsonX Configuration (if using watsonx provider)
+  watsonx:
+    api_key: ""
+    url: "https://us-south.ml.cloud.ibm.com"
+    project_id: ""
+    model_id: "sentence-transformers/all-MiniLM-L6-v2"
+
+# LLM Configuration
+llm:
+  provider: "openai"  # "openai", "anthropic", "watsonx"
+  model: "gpt-3.5-turbo"
+  temperature: 0.1
+  max_tokens: 1000
+  
+  # API Keys (set via environment variables)
+  openai_api_key: ""
+  anthropic_api_key: ""
+  watsonx_api_key: ""
+
+# API Server Settings
+api:
+  host: "0.0.0.0"
+  port: 8000
+  debug: false
+  cors_origins: ["*"]
+  rate_limit: 100  # requests per minute
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "contextsynapse.log"
+  max_size: "10MB"
+  backup_count: 5
+
+# Evaluation Settings
+evaluation:
+  metrics: ["precision@k", "ndcg", "recall", "mrr"]
+  k_values: [1, 5, 10, 20]
+  test_split: 0.2
+
+# MCP Server Configuration
+mcp:
+  enabled: true
+  server_name: "contextsynapse-mcp"
+  version: "1.0.0"
+  capabilities: ["graph_query", "search", "embed", "evaluate"]

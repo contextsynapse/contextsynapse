@@ -1,0 +1,101 @@
+# ChatGPT Conversation Extraction Schema
+# Optimized for ChatGPT data exports (conversations.json from Settings → Export).
+# ChatGPT conversations tend to be longer, more code-heavy, and multi-turn.
+
+name: chatgpt_conversation
+
+strategy_hints: |
+  This text is from a ChatGPT conversation between a user and an assistant.
+  The user asks questions and the assistant provides detailed solutions.
+  Focus on extracting:
+  - TOOLS and TECHNOLOGIES mentioned (Python, React, AWS, Docker, PostgreSQL, etc.)
+  - CONCEPTS discussed (machine learning, API design, data modeling, etc.)
+  - PROBLEMS the user faced (errors, bugs, design challenges, questions)
+  - SOLUTIONS the assistant provided (code, commands, architecture, explanations)
+  - DECISIONS made during the conversation (chose X approach because Y)
+  - CODE patterns and libraries used (specific functions, packages, commands)
+  Extract at least 3-5 entities per conversation. Every tool, library, error message, and technical term counts.
+
+node_types:
+  Topic:
+    fields: [name, description, category]
+    required: [name]
+    description: "A topic or subject discussed (e.g., 'database optimization', 'React hooks', 'deployment')"
+
+  Concept:
+    fields: [name, description, domain, complexity]
+    required: [name]
+    description: "A technical concept, pattern, or methodology (e.g., 'REST API', 'dependency injection', 'backpropagation')"
+
+  Tool:
+    fields: [name, type, purpose, version]
+    required: [name]
+    description: "A software tool, library, framework, or service (e.g., 'pandas', 'Next.js', 'Redis', 'GPT-4')"
+
+  Decision:
+    fields: [statement, rationale, alternatives_considered]
+    required: [statement]
+    description: "A design decision, architecture choice, or recommendation"
+
+  Problem:
+    fields: [statement, context, error_message]
+    required: [statement]
+    description: "A problem, error, bug, or challenge the user faced"
+
+  Solution:
+    fields: [statement, approach, tools_used, code_language]
+    required: [statement]
+    description: "A solution, fix, code snippet, or recommendation provided"
+
+  Task:
+    fields: [title, description, status]
+    required: [title]
+    description: "An action item or next step discussed"
+
+  Person:
+    fields: [name, role, organization]
+    required: [name]
+    description: "A real person mentioned (not the user or ChatGPT)"
+
+  Organization:
+    fields: [name, type, industry]
+    required: [name]
+    description: "A company, product, or platform mentioned"
+
+  Fact:
+    fields: [statement, source, confidence]
+    required: [statement]
+    description: "A factual claim, configuration detail, or technical specification"
+
+edge_types:
+  DISCUSSES:
+    source: Topic
+    target: Concept
+  SOLVED_BY:
+    source: Problem
+    target: Solution
+  USES:
+    source: Solution
+    target: Tool
+  DECIDED:
+    source: Decision
+    target: Concept
+  RELATED_TO:
+    source: Concept
+    target: Concept
+  IMPLEMENTS:
+    source: Tool
+    target: Concept
+
+fact_types:
+  - type: Configuration
+    fields: [statement, tool, context]
+    description: "A configuration, command, or technical setting"
+
+  - type: CodePattern
+    fields: [statement, language, library]
+    description: "A code pattern, function usage, or API call"
+
+  - type: BestPractice
+    fields: [statement, domain, confidence]
+    description: "A best practice or recommendation"

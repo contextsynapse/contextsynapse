@@ -1,0 +1,42 @@
+name: retail
+description: "Retail/ecommerce domain — products, customers, orders, inventory"
+
+node_types:
+  Product:
+    fields: [name, sku, category, price, brand, description]
+    required: [name]
+    description: "Product, item, or SKU"
+  Customer:
+    fields: [name, segment, location, lifetime_value]
+    required: [name]
+    description: "Customer or buyer"
+  Order:
+    fields: [id, date, total, status, channel]
+    required: [id]
+    description: "Purchase order or transaction"
+  Category:
+    fields: [name, parent, description]
+    required: [name]
+    description: "Product category or department"
+  Promotion:
+    fields: [name, type, discount, start_date, end_date]
+    required: [name]
+    description: "Sale, promotion, coupon, or discount"
+  Supplier:
+    fields: [name, location, lead_time, reliability]
+    required: [name]
+    description: "Supplier, vendor, or manufacturer"
+
+edge_types:
+  PURCHASED:
+    source: Customer
+    target: Product
+  IN_CATEGORY:
+    source: Product
+    target: Category
+  SUPPLIED_BY:
+    source: Product
+    target: Supplier
+  APPLIED_TO:
+    source: Promotion
+    target: Product

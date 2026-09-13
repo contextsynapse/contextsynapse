@@ -1,0 +1,164 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AIContextDB Agent API",
+    "description": "Shared knowledge graph for AI agents. Search, write, and dispatch goals.",
+    "version": "1.1.0"
+  },
+  "servers": [
+    {
+      "url": "https://YOUR_NGROK_URL/agent"
+    }
+  ],
+  "paths": {
+    "/sessions/{session_id}/orient": {
+      "get": {
+        "operationId": "orient",
+        "summary": "Get task-specific projected context. Call this FIRST when you connect. Returns relevant knowledge from the shared graph based on your assigned task — no search needed.",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "max_tokens",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 2000 }
+          }
+        ],
+        "responses": { "200": { "description": "Projected context with tasks, relevant knowledge, and cross-agent signals" } }
+      }
+    },
+    "/sessions/{session_id}/graph/search": {
+      "post": {
+        "operationId": "searchGraph",
+        "summary": "Search the knowledge graph by label and query",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "label": { "type": "string" },
+                  "query": { "type": "string" },
+                  "limit": { "type": "integer", "default": 10 }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Search results" } }
+      }
+    },
+    "/sessions/{session_id}/graph/nodes": {
+      "post": {
+        "operationId": "addNode",
+        "summary": "Add a knowledge node to the graph",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "label": { "type": "string", "default": "Finding" },
+                  "properties": {
+                    "type": "object",
+                    "properties": {
+                      "name": { "type": "string" },
+                      "content": { "type": "string" }
+                    },
+                    "required": ["name"]
+                  }
+                },
+                "required": ["label", "properties"]
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Created node" } }
+      }
+    },
+    "/sessions/{session_id}/dispatch": {
+      "post": {
+        "operationId": "dispatchGoal",
+        "summary": "Decompose a goal into tasks and auto-assign to agents based on their strengths",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "goal": {
+                    "type": "string",
+                    "description": "The goal to decompose and assign to agents"
+                  }
+                },
+                "required": ["goal"]
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Created tasks with agent assignments" } }
+      }
+    },
+    "/sessions/{session_id}/graph/query": {
+      "post": {
+        "operationId": "queryGraph",
+        "summary": "Execute an AIQL query against the graph",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "aiql": { "type": "string" }
+                },
+                "required": ["aiql"]
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Query results" } }
+      }
+    }
+  }
+}

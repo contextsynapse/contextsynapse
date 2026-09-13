@@ -1,0 +1,12 @@
+name: rbi_dbie
+connector_type: rbi_dbie
+target_context_id: macro_rbi
+poll_interval_minutes: 10080
+active: true
+config:
+  indicators:
+    - repo_rate
+    - cpi_inflation
+    - gdp_growth
+    - forex_reserves
+    - usd_inr

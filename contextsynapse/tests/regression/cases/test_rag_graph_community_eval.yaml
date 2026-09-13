@@ -1,0 +1,35 @@
+id: test_rag_graph_community_eval_001
+name: RAG Graph Community - With Evaluation Metrics
+description: 'Tests RAG query with graph community detection:
+
+  - Detects communities in graph
+
+  - Includes all nodes in same community
+
+  - Evaluation of community-based retrieval
+
+
+  Uses GPT-3.5-Turbo with custom prompt and embedding model.
+
+  '
+namespace: rag_regression_test_graph
+expected_success: true
+tags:
+- rag
+- graph_search
+- community
+- evaluation
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: 'Tests graph community detection with evaluation.
+
+  Measures effectiveness of community-based context expansion.
+
+  '
+query: ''
+priority: 5
+prerequisites:
+- RUN_INGESTION_PIPELINE
+requires_data: true
+requires_files: []

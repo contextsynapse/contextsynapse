@@ -1,0 +1,46 @@
+id: test_tcs_001
+name: TCS Ingestion - Recursive Chunking (GPT-3.5)
+description: 'Ingests TCS annual report using recursive chunking strategy.
+
+  Uses GPT-3.5-Turbo for high-volume operations.
+
+  Processes first 25-30 pages.
+
+
+  Pipeline:
+
+  1. Extract PDF text (25-30 pages)
+
+  2. Recursive chunking (semantic boundaries)
+
+  3. Create Document and Chunk nodes
+
+  4. Create HAS_CHUNK edges
+
+  5. Generate embeddings
+
+  '
+namespace: tcs_regression_test
+expected_success: true
+expected_nodes: 50
+query: ''
+tags:
+- tcs
+- ingestion
+- recursive
+- gpt-3.5
+verify_persistence: true
+test_both_modes: true
+approved_by: system
+notes: 'This test verifies the structure for TCS ingestion with recursive chunking.
+
+  Actual chunking should be done via ingestion script that processes 25-30 pages.
+
+  Uses GPT-3.5-Turbo as default for high-volume operations.
+
+  '
+priority: 4
+prerequisites: []
+requires_data: false
+requires_files:
+- input-doc/annual-report-2024-2025.pdf

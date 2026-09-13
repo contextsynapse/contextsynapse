@@ -1,0 +1,56 @@
+# Research Paper Extraction Schema
+# Used when ingesting academic papers, technical reports, whitepapers, and studies.
+
+name: research_paper
+
+node_types:
+  Author:
+    fields: [name, affiliation, email, orcid, role]
+    required: [name]
+    description: "An author or contributor of the research paper"
+
+  Method:
+    fields: [name, description, type, parameters, evaluation_metric]
+    required: [name]
+    description: "A research method, technique, or algorithm used in the study"
+
+  Finding:
+    fields: [statement, confidence, significance, metric, value, unit]
+    required: [statement]
+    description: "A key finding, result, or conclusion of the research"
+
+  Citation:
+    fields: [title, authors, year, venue, doi, url]
+    required: [title]
+    description: "A cited reference or related work"
+
+  Dataset:
+    fields: [name, description, size, source, license, url]
+    required: [name]
+    description: "A dataset used for training, evaluation, or analysis"
+
+edge_types:
+  AUTHORED:
+    source: Author
+    target: Finding
+  USED_METHOD:
+    source: Finding
+    target: Method
+  CITES:
+    source: Finding
+    target: Citation
+  TRAINED_ON:
+    source: Method
+    target: Dataset
+  COMPARED_TO:
+    source: Method
+    target: Method
+
+fact_types:
+  - type: Hypothesis
+    fields: [statement, supported, evidence, source_text]
+    description: "A hypothesis stated or tested in the research"
+
+  - type: Benchmark
+    fields: [metric, value, unit, dataset, comparison, source_text]
+    description: "A benchmark result comparing performance against a baseline or prior work"

@@ -1,0 +1,33 @@
+id: test_timetravel_003
+name: Time Travel - Query AT COMMIT
+description: 'Tests SELECT query with AT COMMIT clause for version-based queries.
+
+  Requires temporal queries to be enabled.
+
+  '
+query: 'CREATE NODE Document { title: "Report v1", content: "Initial content" };
+
+
+  SELECT * FROM Document AT COMMIT ''commit_12345'' WHERE title = "Report v1"'
+namespace: timetravel_test
+expected_success: true
+tags:
+- time_travel
+- temporal
+- commit
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: 'Tests SELECT query with AT COMMIT clause.
+
+  Requires temporal queries to be enabled.
+
+  Should return node state at specified commit.
+
+  '
+skip: true
+skip_reason: Temporal queries not fully implemented
+priority: 6
+prerequisites: []
+requires_data: false
+requires_files: []

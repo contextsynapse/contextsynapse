@@ -1,0 +1,86 @@
+# AIContextDB Reverse Proxy
+#
+# Replace {$DOMAIN} with your domain (e.g. app.aicontextdb.com)
+# Caddy auto-provisions HTTPS via Let's Encrypt.
+#
+# For local dev: DOMAIN=localhost:443
+# For production: DOMAIN=app.aicontextdb.com
+
+{$DOMAIN:localhost} {
+    # ── API routes → backend (never exposed directly) ─────────
+    handle /api/* {
+        reverse_proxy api:8000
+    }
+    handle /auth/* {
+        reverse_proxy api:8000
+    }
+    handle /dashboard/* {
+        reverse_proxy api:8000
+    }
+    handle /billing/* {
+        reverse_proxy api:8000
+    }
+    handle /admin/* {
+        reverse_proxy api:8000
+    }
+    handle /context/* {
+        reverse_proxy api:8000
+    }
+    handle /contexts/* {
+        reverse_proxy api:8000
+    }
+    handle /boundaries/* {
+        reverse_proxy api:8000
+    }
+    handle /agent/* {
+        reverse_proxy api:8000
+    }
+    handle /pipelines/* {
+        reverse_proxy api:8000
+    }
+    handle /integrations/* {
+        reverse_proxy api:8000
+    }
+    handle /projects/* {
+        reverse_proxy api:8000
+    }
+    handle /queries/* {
+        reverse_proxy api:8000
+    }
+    handle /health {
+        reverse_proxy api:8000
+    }
+    handle /events/* {
+        reverse_proxy api:8000
+    }
+
+    # ── WebSocket ─────────────────────────────────────────────
+    handle /ws/* {
+        reverse_proxy api:8000
+    }
+
+    # ── MCP SSE endpoint (for remote agents) ──────────────────
+    handle /mcp/* {
+        reverse_proxy api:8000
+    }
+
+    # ── Static frontend (React SPA) ──────────────────────────
+    handle {
+        root * /srv/frontend
+        try_files {path} /index.html
+        file_server
+    }
+
+    # ── Security headers ─────────────────────────────────────
+    header {
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        -Server
+    }
+
+    # ── Rate limiting ────────────────────────────────────────
+    # Caddy rate_limit plugin (optional, install separately)
+    # rate_limit /auth/* 10r/m
+    # rate_limit /api/* 60r/m
+}

@@ -1,0 +1,48 @@
+# Support Ticket Extraction Schema
+# Used when ingesting customer support tickets, bug reports, and helpdesk records.
+
+name: support_ticket
+
+node_types:
+  Customer:
+    fields: [name, email, account_id, tier, company]
+    required: [name]
+    description: "A customer who submitted the support ticket"
+
+  Issue:
+    fields: [title, description, severity, category, status, created_at, resolved_at]
+    required: [title]
+    description: "The problem or issue reported in the ticket"
+
+  Resolution:
+    fields: [description, steps, workaround, resolved_by, resolved_at]
+    required: [description]
+    description: "The solution or fix applied to resolve the issue"
+
+  Product:
+    fields: [name, version, platform, component]
+    required: [name]
+    description: "The product or service component affected by the issue"
+
+edge_types:
+  REPORTED:
+    source: Customer
+    target: Issue
+  RESOLVED_BY:
+    source: Issue
+    target: Resolution
+  AFFECTS:
+    source: Issue
+    target: Product
+  RELATED_TO:
+    source: Issue
+    target: Issue
+
+fact_types:
+  - type: RootCause
+    fields: [description, category, source_text]
+    description: "The identified root cause of the reported issue"
+
+  - type: StepsToReproduce
+    fields: [steps, environment, source_text]
+    description: "Steps required to reproduce the issue"

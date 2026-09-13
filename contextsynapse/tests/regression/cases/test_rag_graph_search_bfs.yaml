@@ -1,0 +1,52 @@
+id: test_rag_001
+name: RAG Graph Search - BFS Traversal
+description: 'Tests RAG query with BFS graph traversal for context expansion.
+
+  Uses graph relationships to expand context beyond initial search results.
+
+
+  Strategy:
+
+  1. Hybrid search to find initial chunks
+
+  2. BFS traversal from chunks to related nodes
+
+  3. Expand context using graph relationships
+
+  4. Generate answer with expanded context
+
+
+  Graph traversal expands to:
+
+  - Related entities (MENTIONS edges)
+
+  - Parent documents (HAS_CHUNK reverse)
+
+  - Related chunks (SIMILAR edges)
+
+  '
+namespace: rag_regression_test_graph
+expected_success: true
+query: ''
+expected_nodes: 3
+expected_edges: 4
+tags:
+- rag
+- graph_search
+- bfs
+- traversal
+verify_persistence: true
+test_both_modes: true
+approved_by: system
+notes: 'Tests BFS graph traversal for RAG context expansion.
+
+  Ensures embedding model is specified for dense search.
+
+  Verifies graph relationships are used for context expansion.
+
+  '
+priority: 5
+prerequisites:
+- RUN_INGESTION_PIPELINE
+requires_data: true
+requires_files: []

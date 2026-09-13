@@ -1,0 +1,30 @@
+id: test_semantic_hash_001
+name: Semantic Hash - SEMANTIC_HASH Function
+description: 'Tests SEMANTIC_HASH function to generate semantic hash of text.
+
+  Uses default model if not specified.
+
+  '
+query: SELECT SEMANTIC_HASH("This is a test document about artificial intelligence
+  and machine learning")
+namespace: semantic_hash_test
+expected_success: true
+tags:
+- semantic_hash
+- function
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: 'Tests SEMANTIC_HASH function.
+
+  Should generate semantic hash of the input text.
+
+  Uses default model if not specified.
+
+  '
+skip: true
+skip_reason: SEMANTIC_HASH operator not implemented
+priority: 6
+prerequisites: []
+requires_data: false
+requires_files: []

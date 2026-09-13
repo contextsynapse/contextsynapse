@@ -1,0 +1,185 @@
+{
+  "document_id": "aiql_0001",
+  "version": "normalized_v1",
+  "aiql_schema_version": "v1.0-core",
+  
+  "source": {
+    "format": "pdf",
+    "file_name": "annual-report-2024-2025.pdf",
+    "file_path": "input-doc/annual-report-2024-2025.pdf",
+    "file_hash": "sha256-abcdef1234567890",
+    "extractor_version": "pdf_v1",
+    "ingested_at": "2025-02-10T14:32:51Z"
+  },
+  
+  "metadata": {
+    "title": "Annual Report 2024-25",
+    "author": "Company Name",
+    "language": "en",
+    "domain": "finance",
+    "tags": ["annual-report", "finance"],
+    "page_count": 120,
+    "duration_sec": null
+  },
+  
+  "extraction_scope": {
+    "mode": "full",
+    "requested_pages": [],
+    "original_page_count": 120,
+    "total_pages_extracted": 3
+  },
+  
+  "content": {
+    "pages": [
+      {
+        "page_no": 1,
+        "flat_text": "INTRODUCTION\nThis report covers the financial performance of the company for the fiscal year 2024-25.",
+        "raw_blocks": [
+          {
+            "id": "raw_1_1",
+            "type": "text",
+            "content": "INTRODUCTION"
+          },
+          {
+            "id": "raw_1_2",
+            "type": "text",
+            "content": "This report covers the financial performance of the company for the fiscal year 2024-25."
+          }
+        ],
+        "normalized_blocks": [
+          {
+            "id": "b1_1",
+            "type": "heading",
+            "level": 1,
+            "text": "INTRODUCTION"
+          },
+          {
+            "id": "b1_2",
+            "type": "paragraph",
+            "text": "This report covers the financial performance of the company for the fiscal year 2024-25."
+          }
+        ],
+        "markdown": "# INTRODUCTION\n\nThis report covers the financial performance of the company for the fiscal year 2024-25.",
+        "hierarchy": {
+          "root": "b1_1",
+          "structure": [
+            {
+              "id": "b1_1",
+              "children": ["b1_2"]
+            }
+          ]
+        }
+      }
+    ],
+    
+    "tables": [
+      {
+        "id": "tbl_01",
+        "from_page": 2,
+        "data": [
+          ["Item", "Cost", "Duration"],
+          ["Service A", "$500", "12 Months"]
+        ],
+        "markdown": "|Item|Cost|Duration|\n|--|--|--|\n|Service A|$500|12 Months|"
+      }
+    ],
+    
+    "images": [
+      {
+        "id": "img_01",
+        "page_no": 3,
+        "path": "extracted/images/img_01.png",
+        "ocr_text": "Responsibilities overview diagram",
+        "markdown": "![img_01](extracted/images/img_01.png)\n> Responsibilities overview diagram"
+      }
+    ],
+    
+    "web": [],
+    "audio": [],
+    "video": [],
+    "extensions": {}
+  },
+  
+  "document_hierarchy": {
+    "root_sections": ["b1_1"],
+    "tree": [
+      {
+        "id": "b1_1",
+        "title": "INTRODUCTION",
+        "level": 1,
+        "children": []
+      }
+    ]
+  },
+  
+  "hierarchy_index": {
+    "b1_1": {
+      "level": 1,
+      "parent": null,
+      "children": ["b1_2"]
+    },
+    "b1_2": {
+      "level": null,
+      "parent": "b1_1",
+      "children": []
+    }
+  },
+  
+  "fast_index": {
+    "pages": {
+      "1": {
+        "offset": 0,
+        "block_ids": ["b1_1", "b1_2"],
+        "markdown_ptr": "content.pages[0].markdown"
+      }
+    },
+    "tables": {
+      "tbl_01": "content.tables[0]"
+    },
+    "images": {
+      "img_01": "content.images[0]"
+    }
+  },
+  
+  "global_text_cache": "[Page 1]\nINTRODUCTION\nThis report covers the financial performance of the company for the fiscal year 2024-25.",
+  
+  "status": {
+    "normalized": true,
+    "ready_for_chunking": true,
+    "graph_links_created": false,
+    "created_at": "2025-02-10T15:11:00Z",
+    "last_modified": "2025-02-10T15:11:00Z"
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

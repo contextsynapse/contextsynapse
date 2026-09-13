@@ -1,0 +1,135 @@
+-- ============================================================================
+-- TCS FULL REPORT PIPELINE WITH ADVANCED CHUNKING AND CHECKPOINTING
+-- ============================================================================
+-- Complete pipeline for processing the full TCS Annual Report with:
+-- - Advanced chunking strategies (semantic_similarity, hierarchical, table_aware)
+-- - Checkpointing at every crucial step
+-- - Complete extraction, chunking, embedding, and entity extraction
+--
+-- Usage:
+--   RUN PIPELINE tcs_advanced_report PARAMETERS (file_path="input-doc/OTC_TCS_2024.pdf");
+-- ============================================================================
+
+CREATE PIPELINE tcs_advanced_report
+IN NAMESPACE tcs_advanced_report
+SOURCE COLLECTION raw_documents
+TARGET COLLECTION knowledge_graph
+DESCRIPTION "TCS Annual Report processing with advanced chunking and checkpointing"
+CHECKPOINT POLICY enabled
+STAGES = [
+-- ============================================================================
+-- STAGE 1: EXTRACT
+-- ============================================================================
+-- Extracts content from TCS Annual Report PDF
+-- Detects text, tables, and images
+-- Creates normalized JSON structure
+-- CHECKPOINT: Created after extraction completes
+-- ============================================================================
+STEP extract
+    EXTRACT FROM FILE "{file_path}"
+    MODE FULL
+    USING READER "AUTO"
+    DETECT (TEXT, TABLES, IMAGES)
+    PARSE_METADATA TRUE
+    STORE AS NODE TYPES (Document, Table, Image)
+    LINK (Document TO Table, Document TO Image)
+    STORE INTERMEDIATE IN COLLECTION raw_documents
+    OUTPUT_DIR "ainatdb_data"
+    STORE_NORMALIZED TRUE,
+
+-- ============================================================================
+-- STAGE 2: CONNECT
+-- ============================================================================
+-- Creates graph nodes from normalized JSON
+-- Links Document, Table, and Image nodes
+-- CHECKPOINT: Created after connection completes
+-- ============================================================================
+STEP connect
+    CONNECT FROM NORMALIZED
+    CREATE NODES (Document, Table, Image)
+    LINK (Document TO Table, Document TO Image)
+    STORE INTERMEDIATE IN COLLECTION raw_documents,
+
+-- ============================================================================
+-- STAGE 3: CHUNK (ADVANCED - HIERARCHICAL CHUNKING)
+-- ============================================================================
+-- Advanced hierarchical chunking that:
+-- 1. Preserves document structure (sections, headings, paragraphs)
+-- 2. Maintains parent-child relationships between chunks
+-- 3. Uses normalized blocks to understand document hierarchy
+-- 4. Creates chunks at multiple levels (section, paragraph, etc.)
+-- CHECKPOINT: Created after chunking completes
+-- ============================================================================
+STEP chunk
+    CHUNK BY semantic
+    PARAMETERS (
+        chunk_size=1000,
+        overlap=200,
+        chunking_strategy="hierarchical"
+    )
+    STORE AS NODE TYPE Chunk
+    LINK TO Document ON HAS_CHUNK
+    STORE INTERMEDIATE IN COLLECTION knowledge_graph,
+
+-- ============================================================================
+-- STAGE 4: EMBED
+-- ============================================================================
+-- Generates vector embeddings for chunks
+-- Enables semantic search and similarity matching
+-- Stores embeddings in Chunk nodes
+-- CHECKPOINT: Created after embedding completes
+-- ============================================================================
+STEP embed
+    EMBED USING PROFILE embedv1
+    PARAMETERS (
+        model="text-embedding-3-large",
+        dimensions=3072,
+        batch_size=100
+    )
+    STORE EMBEDDING IN Chunk.embedding
+    STORE INTERMEDIATE IN COLLECTION knowledge_graph,
+
+-- ============================================================================
+-- STAGE 5: EXTRACT ENTITIES
+-- ============================================================================
+-- Extracts named entities from chunks (People, Organizations, Locations, etc.)
+-- Creates Entity nodes linked to Chunks
+-- Enables entity-based search and queries
+-- CHECKPOINT: Created after entity extraction completes
+-- ============================================================================
+STEP extract_entities
+    EXTRACT ENTITIES
+    USING LLM "gpt-4"
+    PROMPT "Extract all named entities from the text. Identify and categorize entities such as: Organizations, People, Locations, Products, Dates, Financial figures, Technologies, Concepts, and Events. For each entity, provide: name, type, description, and context."
+    STORE AS NODE TYPE Entity
+    LINK TO Chunk ON MENTIONS
+    STORE INTERMEDIATE IN COLLECTION knowledge_graph
+]
+
+-- ============================================================================
+-- PIPELINE METADATA
+-- ============================================================================
+-- This pipeline processes the TCS Annual Report through the following stages:
+-- 1. Extract: Reads and parses PDF, creates normalized JSON
+-- 2. Connect: Creates graph nodes from normalized data
+-- 3. Chunk (Advanced): Multi-strategy chunking (hierarchical, semantic, table-aware)
+-- 4. Embed: Generates vector embeddings for semantic search
+-- 5. Extract Entities: Extracts named entities (People, Organizations, etc.)
+--
+-- Checkpointing:
+-- - Checkpoints are created after each stage automatically
+-- - Can restart from any checkpoint using: RUN PIPELINE ... FROM CHECKPOINT <id>
+-- - Checkpoint policy is enabled by default
+--
+-- Advanced Chunking:
+-- - Hierarchical: Preserves document structure (sections, paragraphs)
+-- - Semantic Similarity: Groups similar content together
+-- - Table Aware: Preserves table context and extracts tables separately
+--
+-- Output:
+-- - Document nodes (with full content)
+-- - Chunk nodes (with embeddings and hierarchical relationships)
+-- - Entity nodes (People, Organizations, Locations, etc.)
+-- - Table nodes (if tables detected)
+-- - Image nodes (if images detected)
+-- ============================================================================

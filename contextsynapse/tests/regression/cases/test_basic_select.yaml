@@ -1,0 +1,21 @@
+id: test_002
+name: SELECT Query - Basic
+description: Tests basic SELECT query
+query: SELECT * FROM TestNode WHERE name CONTAINS 'regression_test' LIMIT 10
+namespace: regression_test
+expected_success: true
+expected_nodes: 1
+tags:
+- basic
+- select
+- query
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: Basic SELECT query test - requires test_001 to run first. Uses CONTAINS for
+  string matching.
+priority: 1
+prerequisites:
+- 'CREATE NODE TestNode { name: "test1", value: 1 }'
+requires_data: false
+requires_files: []

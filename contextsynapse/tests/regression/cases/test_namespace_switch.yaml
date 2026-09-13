@@ -1,0 +1,18 @@
+id: test_003
+name: USE NAMESPACE - Switch
+description: Tests namespace switching
+query: 'CREATE NODE TestNode { name: "switched_test", value: 100 }'
+namespace: regression_test
+expected_success: true
+expected_nodes: 1
+tags:
+- namespace
+- switch
+verify_persistence: true
+test_both_modes: true
+approved_by: system
+notes: Tests namespace switching functionality. Uses double quotes for strings.
+priority: 0
+prerequisites: []
+requires_data: false
+requires_files: []

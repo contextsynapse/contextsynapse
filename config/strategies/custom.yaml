@@ -1,0 +1,70 @@
+# Custom Chunking Strategies Configuration
+# Users can add their own strategies here
+
+custom_strategies:
+  financial_document:
+    name: "Financial Document Chunking"
+    description: "Custom chunking for financial documents"
+    parameters:
+      chunk_size: 1200
+      overlap: 300
+      extract_financial_tables: true
+      preserve_financial_context: true
+      financial_keywords: ["revenue", "profit", "margin", "growth", "debt", "equity"]
+    implementation: "custom/financial_chunking.py"
+    function: "chunk_financial_document"
+    output_validation:
+      required_fields: ["id", "content", "chunk_type", "chunk_index"]
+      chunk_types: ["text", "table"]
+      max_chunk_size: 1500
+      min_chunk_size: 200
+
+  legal_document:
+    name: "Legal Document Chunking"
+    description: "Chunking optimized for legal documents"
+    parameters:
+      chunk_size: 600
+      overlap: 150
+      preserve_legal_structure: true
+      extract_clauses: true
+      legal_markers: ["WHEREAS", "THEREFORE", "IN WITNESS", "SECTION"]
+    implementation: "custom/legal_chunking.py"
+    function: "chunk_legal_document"
+    output_validation:
+      required_fields: ["id", "content", "chunk_type", "chunk_index"]
+      chunk_types: ["text", "header"]
+      max_chunk_size: 1000
+      min_chunk_size: 300
+
+  medical_document:
+    name: "Medical Document Chunking"
+    description: "Chunking for medical reports and documents"
+    parameters:
+      chunk_size: 800
+      overlap: 200
+      extract_medical_entities: true
+      preserve_patient_context: true
+      medical_sections: ["diagnosis", "treatment", "medication", "history"]
+    implementation: "custom/medical_chunking.py"
+    function: "chunk_medical_document"
+    output_validation:
+      required_fields: ["id", "content", "chunk_type", "chunk_index"]
+      chunk_types: ["text", "table"]
+  llm_topic_aware:
+    name: "LLM Topic-Aware Chunking"
+    description: "Uses LLM to identify topics and create non-overlapping intelligent chunks based on semantic boundaries"
+    parameters:
+      context_window_tokens: 4000
+      model: "gpt-3.5-turbo"
+      temperature: 0.1
+      max_topics_per_chunk: null
+      enable_llm_calls: true
+      custom_prompt: null
+      prompt_variables: {}
+    implementation: "custom/llm_topic_chunking.py"
+    function: "chunk_with_llm_topics"
+    output_validation:
+      required_fields: ["id", "content", "chunk_type", "chunk_index"]
+      chunk_types: ["text"]
+      max_chunk_size: 2000
+      min_chunk_size: 100

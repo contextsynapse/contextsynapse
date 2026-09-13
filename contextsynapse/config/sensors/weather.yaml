@@ -1,0 +1,52 @@
+name: Weather & Monsoon
+description: "Weather patterns, monsoon tracking, agricultural impact — affects FMCG, agriculture, insurance stocks"
+type: event
+version: "1.0"
+active: true
+
+connector:
+  type: rss
+  sources:
+    - "https://mausam.imd.gov.in/backend/rss_mausam_bulletin.xml"
+    - "https://economictimes.indiatimes.com/rssfeedsdefault.cms"
+  schedule: "0 */6 * * *"
+  poll_interval_minutes: 360
+  filter:
+    topics:
+      - monsoon
+      - rainfall
+      - drought
+      - flood
+      - heatwave
+      - crop output
+      - kharif
+      - rabi
+      - sowing
+      - reservoir
+      - IMD forecast
+    exclude:
+      - cricket
+      - entertainment
+
+schema:
+  node_type: WeatherSignal
+  fields:
+    region: { type: string }
+    condition: { type: string }
+    severity: { type: enum, values: [normal, watch, warning, severe] }
+    crop_impact: { type: string }
+  extraction_strategy: news_article
+
+hierarchy:
+  affects_sectors: ["FMCG", "Energy", "Consumer"]
+  upstream_of: "India Economy"
+  weight: 0.4
+  level: country
+
+decay:
+  rate: 0.15
+  profile: normal
+
+relevance:
+  sectors: ["FMCG", "Consumer", "Energy"]
+  keywords: ["monsoon", "rural demand", "crop output", "food inflation", "agricultural"]

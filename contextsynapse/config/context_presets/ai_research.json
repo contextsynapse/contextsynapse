@@ -1,0 +1,25 @@
+{
+  "name": "AI Safety Research",
+  "description": "AI alignment, safety, and LLM evaluation research",
+  "context_type": "knowledge_base",
+  "sensitivity": "public",
+  "tags": ["research", "ai"],
+  "pipeline": {
+    "template_id": "builtin:smart-article",
+    "source_url": "https://arxiv.org/list/cs.AI/recent",
+    "max_pages": 10,
+    "schema_id": "research_paper",
+    "schema_mode": "strict"
+  },
+  "filters": {
+    "keyword_exclude": [],
+    "keyword_include": [],
+    "semantic_rules": [
+      {"description": "AI alignment and safety research", "threshold": 0.7},
+      {"description": "Large language model evaluation and benchmarks", "threshold": 0.65},
+      {"description": "Reinforcement learning from human feedback", "threshold": 0.7}
+    ],
+    "semantic_mode": "or"
+  },
+  "schedule": {"trigger_type": "scheduled", "interval_minutes": 360}
+}

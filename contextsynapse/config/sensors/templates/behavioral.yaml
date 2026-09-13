@@ -1,0 +1,56 @@
+template_name: Behavioural Finance
+description: "Human psychology in markets — herd index, FOMO/panic gauge, retail vs institutional divergence, financial literacy proxy."
+category: behavioral
+scope: global
+tags: [behavioral, psychology, herd, fomo, crowd]
+recommended_for: [equity, crypto]
+
+sensors:
+  - name: herd_index
+    label: Herd Index
+    description: "How much the crowd is moving in lockstep — high = momentum trade risk"
+    impact_type: latent
+    decay_profile: exponential
+    scope: global
+    weight: 0.7
+
+  - name: fomo_gauge
+    label: FOMO Gauge
+    description: "Fear-of-missing-out signal — derived from search trends, retail volume spikes"
+    impact_type: immediate
+    decay_profile: exponential
+    scope: global
+    weight: 0.65
+
+  - name: panic_indicator
+    label: Panic Indicator
+    description: "Detected panic selling patterns — circuit breakers, high volatility + volume"
+    impact_type: immediate
+    decay_profile: exponential
+    scope: global
+    weight: 0.75
+
+  - name: retail_institutional_ratio
+    label: Retail vs Institutional Ratio
+    description: "Retail volume share vs institutional — retail-dominated = higher sentiment noise"
+    impact_type: latent
+    decay_profile: linear
+    scope: global
+    weight: 0.6
+
+  - name: overconfidence_index
+    label: Overconfidence Index
+    description: "High turnover + low hedging + narrow bid-ask = overconfident market"
+    impact_type: latent
+    decay_profile: linear
+    scope: global
+    weight: 0.55
+
+pipeline:
+  connector: api + scraper
+  sources:
+    - google_trends
+    - nse_market_depth
+    - bse_participantwise
+  schedule: "0 */6 * * *"
+  enrichment: fact_extraction

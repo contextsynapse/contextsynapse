@@ -1,0 +1,35 @@
+id: test_blockchain_003
+name: Blockchain - Get Latest Block
+description: 'Tests GET LATEST BLOCK query to get the most recent block.
+
+  Requires traceability to be enabled.
+
+  '
+query: 'CREATE NODE TestNode { name: "test_node_1" };
+
+  CREATE NODE TestNode { name: "test_node_2" };
+
+
+  GET LATEST BLOCK'
+namespace: blockchain_test
+expected_success: true
+tags:
+- blockchain
+- traceability
+- latest_block
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: 'Tests GET LATEST BLOCK query.
+
+  Requires traceability to be enabled.
+
+  Should return the most recent blockchain block.
+
+  '
+skip: true
+skip_reason: Traceability layer not enabled in default configuration
+priority: 6
+prerequisites: []
+requires_data: false
+requires_files: []

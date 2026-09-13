@@ -1,0 +1,46 @@
+{
+  "graph_name": "annual_report_enhanced",
+  "features": {
+    "namespaces": true,
+    "source_detection": true,
+    "columnar_storage": true,
+    "embeddings": true,
+    "temporal": true,
+    "search": true,
+    "evaluation": true,
+    "wal_logging": true,
+    "caching": true,
+    "security": true
+  },
+  "storage": {
+    "format": "hybrid",
+    "node_storage": "columnar",
+    "edge_storage": "columnar",
+    "embedding_storage": "columnar",
+    "metadata_storage": "columnar",
+    "text_storage": "row_based"
+  },
+  "indexes": {
+    "primary": [
+      "id"
+    ],
+    "secondary": [
+      "name",
+      "type",
+      "label"
+    ],
+    "search": [
+      "text_content",
+      "embedding"
+    ],
+    "temporal": [
+      "created_at",
+      "updated_at"
+    ]
+  },
+  "compression": {
+    "enabled": true,
+    "algorithm": "lz4",
+    "level": 6
+  }
+}

@@ -1,0 +1,29 @@
+id: test_delete_001
+name: DELETE EDGE - Basic
+description: Tests basic DELETE EDGE query to remove edges from the graph
+query: |
+  CREATE NODE Person AS p1 { name: "Alice" };
+  CREATE NODE Person AS p2 { name: "Bob" };
+  CREATE EDGE KNOWS SRC p1 DEST p2 { weight: 1.0, since: 2020 };
+  DELETE EDGE KNOWS WHERE source.name = "Alice" AND target.name = "Bob"
+namespace: regression_test
+expected_success: true
+expected_nodes: 0
+expected_edges: 0
+tags:
+- basic
+- delete
+- edge
+verify_persistence: true
+test_both_modes: true
+approved_by: system
+notes: |
+  Tests DELETE EDGE query that was recently fixed.
+  Creates an edge and then deletes it using WHERE conditions.
+  Verifies that DELETE EDGE correctly removes edges matching conditions.
+priority: 2
+prerequisites: []
+requires_data: false
+requires_files: []
+
+

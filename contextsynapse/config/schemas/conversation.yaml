@@ -1,0 +1,167 @@
+# Universal Conversation Extraction Schema
+# Optimized for any AI conversation export (ChatGPT, Claude, Gemini, etc.)
+# Extracts topics, technical concepts, decisions, tasks, solutions, interests, and preferences.
+
+name: conversation
+
+extraction:
+  strategy: conversation
+  parser: turn
+  significance_threshold: 0.3
+  signals: [decision, action, question, problem, solution]
+  topic_clustering: true
+  topic_method: llm_with_fallback
+  stages:
+    - detect_signals
+    - extract_entities
+    - extract_preferences
+    - store_documents
+    - resolve_entities
+    - build_edges
+    - infer_domains
+    - cluster_topics
+    - link_cross_reference
+    - validate_gate
+    - deduplicate
+    - synthesize_cu
+    - embed
+    - index_bm25
+
+strategy_hints: |
+  This text is from a conversation between a user and an AI assistant.
+  It could be from ChatGPT, Claude, Gemini, or any other AI.
+  Focus on extracting:
+  - TOOLS and TECHNOLOGIES mentioned (AWS, Docker, React, Python, etc.)
+  - CONCEPTS discussed (machine learning, insurance, statistics, etc.)
+  - PROBLEMS the user faced (errors, bugs, design challenges)
+  - SOLUTIONS the assistant provided (commands, code, recommendations)
+  - DECISIONS: only extract if someone explicitly chose X over Y with reasoning
+  - TASKS or action items discussed
+  - USER INTERESTS: topics the user repeatedly asks about or shows curiosity in
+
+  IMPORTANT RULES:
+  - A Decision MUST be an explicit choice between alternatives with rationale. NOT random statements.
+  - An Action MUST be a specific task someone will do. NOT modal verbs like "must", "should", "could".
+  - A Person MUST be a real named human (e.g. "Elon Musk", "Dr. Sharma"). NOT concepts, roles, or agent names like "Data Validation Agent" or "Functional Requirements".
+  - Do NOT extract single words as entities. Every entity name must be 2+ words or a proper noun.
+  - Do NOT extract UI descriptions, code output, formatting instructions, or code variable names.
+  - Do NOT extract generic phrases like "Updated Flow", "Chosen", "Failed" as entities.
+  - Only extract entities that are meaningful, specific, and reusable. Skip noise aggressively.
+
+node_types:
+  Topic:
+    fields: [name, description, category]
+    required: [name]
+    description: "A topic or subject discussed (e.g., 'SSH troubleshooting', 'meal planning', 'system design')"
+
+  Concept:
+    fields: [name, description, domain, complexity]
+    required: [name]
+    description: "A technical concept, framework, technology, or methodology discussed (e.g., 'React', 'Kubernetes', 'reinforcement learning')"
+
+  Tool:
+    fields: [name, type, purpose, url]
+    required: [name]
+    description: "A software tool, service, library, or platform mentioned (e.g., 'AWS EC2', 'Blender', 'AutoGen', 'Docker')"
+
+  Decision:
+    fields: [statement, rationale, alternatives_considered]
+    required: [statement]
+    description: "A design decision, architecture choice, or recommendation made during the conversation"
+
+  Problem:
+    fields: [statement, context, severity]
+    required: [statement]
+    description: "A problem, error, bug, or challenge discussed"
+
+  Solution:
+    fields: [statement, approach, tools_used]
+    required: [statement]
+    description: "A solution, fix, workaround, or recommendation provided"
+
+  Task:
+    fields: [title, description, status, priority]
+    required: [title]
+    description: "An action item, next step, or task discussed"
+
+  Person:
+    fields: [name, role, organization]
+    required: [name]
+    description: "A real named human mentioned (e.g. 'Elon Musk', 'Dr. Priya Sharma'). NOT roles, concepts, agent names, or software components."
+
+  Organization:
+    fields: [name, type, industry]
+    required: [name]
+    description: "A company, team, or organization mentioned"
+
+  Fact:
+    fields: [statement, source, confidence]
+    required: [statement]
+    description: "A factual claim, configuration detail, or technical specification"
+
+  Interest:
+    fields: [name, description, frequency]
+    required: [name]
+    description: "A topic or area the user shows repeated interest in across conversations"
+
+  Preference:
+    fields: [statement, category, confidence]
+    required: [statement]
+    description: "A user preference or working style detected from conversation patterns"
+
+edge_types:
+  DISCUSSES:
+    source: Topic
+    target: Concept
+  SOLVED_BY:
+    source: Problem
+    target: Solution
+  USES:
+    source: Solution
+    target: Tool
+  DECIDED:
+    source: Decision
+    target: Concept
+  RELATED_TO:
+    source: Concept
+    target: Concept
+  IMPLEMENTS:
+    source: Tool
+    target: Concept
+  USED_WITH:
+    source: Tool
+    target: Tool
+  ADDRESSES:
+    source: Solution
+    target: Problem
+  PART_OF:
+    source: Tool
+    target: Topic
+  INVOLVES:
+    source: Topic
+    target: Tool
+  ABOUT:
+    source: Problem
+    target: Concept
+  RECOMMENDS:
+    source: Decision
+    target: Tool
+  INTERESTED_IN:
+    source: Session
+    target: Interest
+  PREFERS:
+    source: Session
+    target: Preference
+
+fact_types:
+  - type: Configuration
+    fields: [statement, tool, context]
+    description: "A configuration setting, command, or technical detail"
+
+  - type: Recommendation
+    fields: [statement, confidence, context]
+    description: "A best practice or recommendation from the conversation"
+
+  - type: Learning
+    fields: [statement, source_conversation, domain]
+    description: "A key insight or learning from the discussion"

@@ -1,0 +1,103 @@
+# SDLC Extraction Schema
+# Used when ingesting requirements docs, project plans, and architecture specs
+# into a software_dev context. The LLM extracts these specific entity types
+# instead of generic TextChunks.
+
+name: sdlc
+
+node_types:
+  Feature:
+    fields: [name, description, priority, status, acceptance_criteria]
+    required: [name]
+    description: "A product feature or capability to be built"
+
+  UserStory:
+    fields: [title, as_a, i_want, so_that, acceptance_criteria, priority, story_points]
+    required: [title]
+    description: "A user story in as-a/i-want/so-that format"
+
+  Requirement:
+    fields: [title, description, type, priority, status]
+    required: [title]
+    description: "A functional or non-functional requirement (type: functional, non_functional, performance, security)"
+
+  Constraint:
+    fields: [title, description, type, severity]
+    required: [title]
+    description: "A technical or business constraint (type: technical, business, regulatory, timeline)"
+
+  Milestone:
+    fields: [name, description, target_date, status, deliverables]
+    required: [name]
+    description: "A project milestone or phase with a target date"
+
+  Component:
+    fields: [name, description, type, technology, owner]
+    required: [name]
+    description: "A system component or module (type: frontend, backend, database, service, library)"
+
+  APIEndpoint:
+    fields: [method, path, description, request_body, response_body, auth_required]
+    required: [path]
+    description: "A REST API endpoint specification"
+
+  DataModel:
+    fields: [name, description, fields, primary_key, indexes]
+    required: [name]
+    description: "A data model or database table definition"
+
+  Risk:
+    fields: [title, description, probability, impact, mitigation]
+    required: [title]
+    description: "A project risk with mitigation strategy"
+
+  Stakeholder:
+    fields: [name, role, responsibilities, contact]
+    required: [name]
+    description: "A project stakeholder or team member"
+
+edge_types:
+  IMPLEMENTS:
+    source: Component
+    target: Feature
+  DEPENDS_ON:
+    source: Feature
+    target: Feature
+  BELONGS_TO:
+    source: UserStory
+    target: Feature
+  CONSTRAINED_BY:
+    source: Feature
+    target: Constraint
+  DELIVERS:
+    source: Milestone
+    target: Feature
+  USES:
+    source: Component
+    target: Component
+  EXPOSES:
+    source: Component
+    target: APIEndpoint
+  STORES:
+    source: Component
+    target: DataModel
+  OWNS:
+    source: Stakeholder
+    target: Component
+  MITIGATES:
+    source: Risk
+    target: Feature
+  REQUIRES:
+    source: Feature
+    target: Requirement
+
+fact_types:
+  - type: TechDecision
+    fields: [statement, rationale, alternatives, decided_by]
+    description: "A technology or architecture decision"
+  - type: Assumption
+    fields: [statement, confidence, impact_if_wrong]
+    description: "A project assumption that needs validation"
+  - type: Metric
+    fields: [name, target_value, unit, measurement_method]
+    description: "A performance or business metric with target"

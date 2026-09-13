@@ -1,0 +1,57 @@
+# Document Store Configuration Example
+# ====================================
+# This file shows how to configure document database backends
+# Copy this to: contextsynapse_data/namespaces/{namespace}/config.yaml
+# Or add to existing namespace config.yaml
+
+namespace: your_namespace
+mode: collection_based
+
+# Document Store Configuration
+document_store:
+  # Backend selection: 'tinydb', 'sqlite', or 'couchdb'
+  backend: tinydb  # Start with fast non-server version
+  
+  # Enable/disable document store
+  enabled: true
+  
+  # Backend-specific configuration
+  config:
+    # For TinyDB (non-server, fast):
+    # Optional: custom storage path
+    # storage_path: "custom/path/to/documents"
+    
+    # For SQLite (non-server, built-in):
+    # Optional: custom storage path
+    # storage_path: "custom/path/to/documents"
+    
+    # For CouchDB (server-based):
+    # url: "http://localhost:5984"
+    # username: "admin"  # Optional
+    # password: "password"  # Optional
+    # database: "your_database_name"  # Optional, defaults to namespace_collection
+
+# Example: Using TinyDB (default, recommended for testing)
+# document_store:
+#   backend: tinydb
+#   enabled: true
+#   config: {}
+
+# Example: Using SQLite (built-in, no extra dependencies)
+# document_store:
+#   backend: sqlite
+#   enabled: true
+#   config: {}
+
+# Example: Using CouchDB (requires server installation)
+# document_store:
+#   backend: couchdb
+#   enabled: true
+#   config:
+#     url: "http://localhost:5984"
+#     username: "admin"
+#     password: "password"
+#     database: "my_documents"
+
+
+

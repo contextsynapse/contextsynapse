@@ -1,0 +1,179 @@
+# docker-compose.yml — AIContextDB deployment
+#
+# Usage:
+#   Start:      docker compose up -d
+#   With UI:    docker compose --profile ui up -d
+#   With cloud: docker compose --profile cloud up -d
+#   Full:       docker compose --profile ui --profile cloud up -d
+#   Logs:       docker compose logs -f api
+#   Stop:       docker compose down
+
+services:
+  # ── PostgreSQL (identity, tenants, auth) ───────────────
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: contextsynapse
+      POSTGRES_USER: contextsynapse
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-contextsynapse}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "contextsynapse"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+
+  # ── Redis (agent registry, graph coordination) ───────────
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+
+  # ── API Server ───────────────────────────────────────────
+  # Port 8000 is only exposed for local dev.
+  # In production (--profile prod), Caddy proxies → api:8000 internally.
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - app_data:/app/contextsynapse_data
+      - ./config:/app/config:ro
+    environment:
+      # Redis
+      - AICONTEXTDB_REDIS_URL=redis://redis:6379/0
+      # Server
+      - AICONTEXTDB_ENV=production
+      - AICONTEXTDB_API_HOST=0.0.0.0
+      - AICONTEXTDB_API_PORT=8000
+      - AICONTEXTDB_API_WORKERS=${WORKERS:-4}
+      - AICONTEXTDB_LOG_LEVEL=info
+      # Auth
+      - AICONTEXTDB_ADMIN_KEY=${ADMIN_KEY:-changeme}
+      - AICONTEXTDB_JWT_SECRET=${JWT_SECRET:-changeme}
+      # LLM (optional)
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      # Database
+      - DATABASE_URL=postgresql://contextsynapse:${POSTGRES_PASSWORD:-contextsynapse}@postgres:5432/contextsynapse
+      # Vector DB
+      - AICONTEXTDB_VECTOR_DB_BACKEND=${VECTOR_BACKEND:-custom}
+      - QDRANT_URL=${QDRANT_URL:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8000/health').raise_for_status()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  # ── Frontend (React dashboard) ───────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    profiles:
+      - ui
+    restart: unless-stopped
+
+  # ── Cloudflare Tunnel (public access) ────────────────────
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN:-}
+    depends_on:
+      - api
+    profiles:
+      - cloud
+    restart: unless-stopped
+
+  # ── Caddy reverse proxy (self-hosted HTTPS) ──────────────
+  # Usage: docker compose --profile prod up -d
+  # Set DOMAIN=app.yourdomain.com for auto HTTPS
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./config/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./frontend/build:/srv/frontend:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      - DOMAIN=${DOMAIN:-localhost}
+    depends_on:
+      api:
+        condition: service_healthy
+    profiles:
+      - prod
+    restart: unless-stopped
+
+  # ── Qdrant (vector database) ─────────────────────────────
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__GRPC_PORT=6334
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    profiles:
+      - vector
+    restart: unless-stopped
+
+  # ── Prometheus (monitoring) ──────────────────────────────
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    depends_on:
+      api:
+        condition: service_healthy
+    profiles:
+      - prod
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  app_data:
+  qdrant_data:
+  prometheus_data:
+  caddy_data:
+  caddy_config:

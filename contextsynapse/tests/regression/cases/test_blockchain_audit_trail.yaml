@@ -1,0 +1,37 @@
+id: test_blockchain_007
+name: Blockchain - Get Audit Trail
+description: 'Tests GET AUDIT TRAIL query to get complete operation history.
+
+  Requires traceability to be enabled.
+
+  '
+query: 'CREATE NODE TestNode { name: "test_node_1" };
+
+  CREATE NODE TestNode { name: "test_node_2" };
+
+  UPDATE NODE TestNode SET { value: 150 } WHERE name = "test_node_1";
+
+
+  GET AUDIT TRAIL'
+namespace: blockchain_test
+expected_success: true
+tags:
+- blockchain
+- traceability
+- audit_trail
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: 'Tests GET AUDIT TRAIL query.
+
+  Requires traceability to be enabled.
+
+  Should return complete operation history.
+
+  '
+skip: true
+skip_reason: Traceability layer not enabled in default configuration
+priority: 6
+prerequisites: []
+requires_data: false
+requires_files: []

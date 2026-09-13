@@ -1,0 +1,19 @@
+{
+  "name": "Claude Conversations",
+  "description": "Import your Claude.ai conversation history. Export from claude.ai (Settings → Account → Request Data Export) and upload the ZIP or JSON file.",
+  "context_type": "knowledge_base",
+  "pipeline": {
+    "template_id": "smart_text",
+    "schema_id": "chat_history",
+    "schema_mode": "schema_plus"
+  },
+  "schedule": {
+    "trigger_type": "one_time"
+  },
+  "connector": {
+    "type": "claude",
+    "accepts_zip": true,
+    "accepts_json": true,
+    "instructions": "Upload the ZIP file from Claude export (contains conversations.json) or paste the path to a Claude Code project directory."
+  }
+}

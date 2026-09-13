@@ -1,0 +1,75 @@
+# Knowledge Base Extraction Schema
+# Used when ingesting documents, research, specs, meeting notes into a knowledge_base context.
+# The LLM extracts structured entities instead of generic text chunks.
+
+name: knowledge_base
+
+node_types:
+  Person:
+    fields: [name, role, department, email, expertise]
+    required: [name]
+    description: "A person — employee, stakeholder, customer, author"
+
+  Organization:
+    fields: [name, type, industry, location, size]
+    required: [name]
+    description: "A company, team, department, or external organization"
+
+  Concept:
+    fields: [name, definition, domain, importance]
+    required: [name]
+    description: "An abstract concept, methodology, theory, or domain term"
+
+  Topic:
+    fields: [name, description, category]
+    required: [name]
+    description: "A subject area or theme discussed in the documents"
+
+  Technology:
+    fields: [name, category, version, license, description]
+    required: [name]
+    description: "A tool, framework, platform, language, or protocol"
+
+  Document:
+    fields: [title, author, date, type, summary]
+    required: [title]
+    description: "A referenced document, paper, report, or specification"
+
+edge_types:
+  WORKS_AT:
+    source: Person
+    target: Organization
+  AUTHORED:
+    source: Person
+    target: Document
+  DISCUSSES:
+    source: Document
+    target: Topic
+  RELATED_TO:
+    source: Concept
+    target: Concept
+  USES:
+    source: Organization
+    target: Technology
+  EXPERT_IN:
+    source: Person
+    target: Concept
+  MENTIONS:
+    source: Document
+    target: Person
+  PART_OF:
+    source: Topic
+    target: Topic
+
+fact_types:
+  - type: Claim
+    fields: [statement, confidence, source_text]
+    description: "A verifiable statement or assertion from the source material"
+
+  - type: Metric
+    fields: [name, value, unit, period, source_text]
+    description: "A quantitative measurement, KPI, or statistic"
+
+  - type: Date
+    fields: [event, date, description, source_text]
+    description: "A significant date, deadline, or timeline event"

@@ -1,0 +1,34 @@
+id: test_traverse_002
+name: TRAVERSE - With MAX DEPTH
+description: Tests TRAVERSE query with MAX DEPTH clause to limit traversal depth
+query: |
+  CREATE NODE Person AS p1 { name: "Alice" };
+  CREATE NODE Person AS p2 { name: "Bob" };
+  CREATE NODE Person AS p3 { name: "Charlie" };
+  CREATE NODE Person AS p4 { name: "David" };
+  CREATE EDGE KNOWS SRC p1 DEST p2 { since: 2020 };
+  CREATE EDGE KNOWS SRC p2 DEST p3 { since: 2021 };
+  CREATE EDGE KNOWS SRC p3 DEST p4 { since: 2022 };
+  TRAVERSE FROM p1 VIA KNOWS MAX DEPTH 2 LIMIT 10
+namespace: regression_test
+expected_success: true
+expected_nodes: 2
+expected_edges: null
+tags:
+- basic
+- traverse
+- query
+- graph
+- max_depth
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: |
+  Tests TRAVERSE with MAX DEPTH clause that was recently fixed.
+  Creates a chain of relationships and limits traversal to depth 2.
+  Verifies that MAX DEPTH correctly limits the traversal depth.
+priority: 2
+prerequisites: []
+requires_data: false
+requires_files: []
+

@@ -1,0 +1,50 @@
+name: Supply Chain Disruption
+description: "Global supply chain monitoring — shipping, logistics, chip shortage, raw material availability"
+type: event
+version: "1.0"
+active: true
+
+connector:
+  type: rss
+  sources:
+    - "https://www.supplychaindive.com/feeds/news/"
+    - "https://economictimes.indiatimes.com/rssfeedsdefault.cms"
+  schedule: "0 */8 * * *"
+  poll_interval_minutes: 480
+  filter:
+    topics:
+      - supply chain
+      - shipping
+      - logistics
+      - container
+      - freight
+      - chip shortage
+      - semiconductor
+      - raw material
+      - port congestion
+      - trade disruption
+    exclude:
+      - entertainment
+
+schema:
+  node_type: SupplyChainSignal
+  fields:
+    disruption_type: { type: string }
+    region: { type: string }
+    severity: { type: enum, values: [low, medium, high, critical] }
+    affected_industry: { type: string }
+  extraction_strategy: news_article
+
+hierarchy:
+  affects_sectors: ["Auto", "Pharma", "IT", "Metals"]
+  upstream_of: "Global Macro"
+  weight: 0.5
+  level: world
+
+decay:
+  rate: 0.08
+  profile: normal
+
+relevance:
+  sectors: ["Auto", "Pharma", "Metals", "Consumer"]
+  keywords: ["supply chain", "shortage", "logistics", "shipping cost", "raw material"]

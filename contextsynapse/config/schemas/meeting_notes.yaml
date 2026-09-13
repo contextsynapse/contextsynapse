@@ -1,0 +1,51 @@
+# Meeting Notes Extraction Schema
+# Used when ingesting meeting minutes, standup summaries, and discussion transcripts.
+
+name: meeting_notes
+
+node_types:
+  Attendee:
+    fields: [name, role, team, email]
+    required: [name]
+    description: "A person who attended or participated in the meeting"
+
+  Decision:
+    fields: [title, description, rationale, date, status]
+    required: [title]
+    description: "A decision made during the meeting"
+
+  ActionItem:
+    fields: [title, description, owner, due_date, priority, status]
+    required: [title]
+    description: "A task or follow-up action assigned during the meeting"
+
+  Topic:
+    fields: [title, description, duration_minutes, outcome]
+    required: [title]
+    description: "A topic or agenda item discussed in the meeting"
+
+edge_types:
+  DECIDED:
+    source: Attendee
+    target: Decision
+  ASSIGNED_TO:
+    source: ActionItem
+    target: Attendee
+  DISCUSSED:
+    source: Attendee
+    target: Topic
+  RAISED:
+    source: Attendee
+    target: ActionItem
+  RELATED_TO:
+    source: Decision
+    target: Topic
+
+fact_types:
+  - type: Summary
+    fields: [statement, topic, source_text]
+    description: "A key point or summary from the meeting discussion"
+
+  - type: Blocker
+    fields: [description, owner, impact, source_text]
+    description: "An impediment or blocker raised during the meeting"

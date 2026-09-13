@@ -1,0 +1,39 @@
+id: test_blockchain_008
+name: Blockchain - Get Filtered Audit Trail
+description: 'Tests GET AUDIT TRAIL query with WHERE clause filtering.
+
+  Requires traceability to be enabled.
+
+  '
+query: 'CREATE NODE TestNode { name: "test_node_1" } AS n1;
+
+  CREATE NODE TestNode { name: "test_node_2" } AS n2;
+
+  CREATE EDGE CONNECTS FROM n1 TO n2;
+
+  GET AUDIT TRAIL WHERE entity_type=node
+
+  '
+namespace: blockchain_test
+expected_success: true
+tags:
+- blockchain
+- traceability
+- audit_trail
+- filtered
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: 'Tests GET AUDIT TRAIL with WHERE clause.
+
+  Requires traceability to be enabled.
+
+  Should return filtered audit trail (only node operations).
+
+  '
+skip: true
+skip_reason: Traceability layer not enabled in default configuration
+priority: 6
+prerequisites: []
+requires_data: false
+requires_files: []

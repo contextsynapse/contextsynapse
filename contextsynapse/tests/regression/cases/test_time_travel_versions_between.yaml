@@ -1,0 +1,39 @@
+id: test_timetravel_005
+name: Time Travel - Query VERSIONS BETWEEN
+description: 'Tests SELECT query with VERSIONS BETWEEN clause to get versions in time
+  range.
+
+  Requires temporal queries to be enabled.
+
+  '
+query: 'CREATE NODE Person { name: "David", age: 30 };
+
+  UPDATE NODE Person SET { age: 31 } WHERE name = "David";
+
+  UPDATE NODE Person SET { age: 32 } WHERE name = "David";
+
+
+  SELECT * FROM Person VERSIONS BETWEEN TIMESTAMP ''2024-01-01T00:00:00Z'' AND ''2024-12-31T23:59:59Z''
+  WHERE name = "David"'
+namespace: timetravel_test
+expected_success: true
+tags:
+- time_travel
+- temporal
+- versions_between
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: 'Tests SELECT query with VERSIONS BETWEEN clause.
+
+  Requires temporal queries to be enabled.
+
+  Should return versions in specified time range.
+
+  '
+skip: true
+skip_reason: Temporal queries not fully implemented
+priority: 6
+prerequisites: []
+requires_data: false
+requires_files: []

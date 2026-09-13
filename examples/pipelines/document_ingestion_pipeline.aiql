@@ -1,0 +1,181 @@
+-- ============================================================================
+-- DOCUMENT INGESTION PIPELINE
+-- ============================================================================
+-- A comprehensive pipeline for ingesting documents (PDF, DOCX, TXT, etc.)
+-- and creating a knowledge graph with entities, relationships, and embeddings.
+--
+-- Usage:
+--   1. CREATE NAMESPACE my_docs;
+--   2. USE NAMESPACE my_docs;
+--   3. CREATE PIPELINE document_ingestion ... (this pipeline)
+--   4. RUN PIPELINE document_ingestion WITH file_path="path/to/document.pdf";
+-- ============================================================================
+
+CREATE PIPELINE document_ingestion
+IN NAMESPACE default
+SOURCE COLLECTION raw_documents
+TARGET COLLECTION processed_documents
+DESCRIPTION "Complete document ingestion pipeline with extraction, chunking, embedding, entity extraction, and relationship extraction"
+
+STAGES = [
+-- ============================================================================
+-- STAGE 1: EXTRACT
+-- ============================================================================
+-- Extracts content from documents (PDF, DOCX, TXT, etc.)
+-- Detects text, tables, and images
+-- Creates Document, Table, and Image nodes
+-- ============================================================================
+STEP extract
+    EXTRACT FROM FILE "{file_path}"
+    USING READER "AUTO"
+    DETECT (TEXT, TABLES, IMAGES)
+    PARSE_METADATA TRUE
+    STORE AS NODE TYPES (Document, Table, Image)
+    LINK (Document TO Table, Document TO Image)
+    STORE INTERMEDIATE IN COLLECTION raw_documents,
+
+-- ============================================================================
+-- STAGE 2: CHUNK
+-- ============================================================================
+-- Splits documents into semantic chunks for better processing
+-- Uses LLM for intelligent chunking that preserves context
+-- Creates Chunk nodes linked to Document
+-- ============================================================================
+STEP chunk
+    CHUNK BY semantic
+    USING MODEL "gpt-4"
+    PARAMETERS (
+        max_tokens=1000,
+        overlap=200,
+        max_pages=null,
+        strategy="semantic",
+        temperature=0.3,
+        topic_detection=true,
+        preserve_topics=true,
+        coherence_threshold=0.8
+    )
+    STORE AS NODE TYPE Chunk
+    LINK TO Document ON HAS_CHUNK
+    STORE INTERMEDIATE IN COLLECTION processed_documents,
+
+-- ============================================================================
+-- STAGE 3: EMBED
+-- ============================================================================
+-- Generates vector embeddings for chunks
+-- Enables semantic search and similarity matching
+-- Stores embeddings in Chunk nodes
+-- ============================================================================
+STEP embed
+    EMBED USING PROFILE embedv1
+    PARAMETERS (
+        model="text-embedding-3-large",
+        dimensions=3072
+    )
+    STORE EMBEDDING IN Chunk.embedding
+    STORE INTERMEDIATE IN COLLECTION processed_documents,
+
+-- ============================================================================
+-- STAGE 4: EXTRACT ENTITIES
+-- ============================================================================
+-- Extracts named entities from chunks using LLM
+-- Identifies: Organizations, People, Locations, Products, Dates, etc.
+-- Creates Entity nodes linked to Chunks
+-- ============================================================================
+STEP extract_entities
+    EXTRACT ENTITIES
+    USING LLM "gpt-4"
+    PARAMETERS (
+        temperature=0.3,
+        max_tokens=2000
+    )
+    PROMPT "Extract all named entities from the text. Identify and categorize entities such as: Organizations, People, Locations, Products, Dates, Financial figures, Technologies, Concepts, and Events. For each entity, provide: name, type, description, and context."
+    STORE AS NODE TYPE Entity
+    LINK TO Chunk ON MENTIONS
+    STORE INTERMEDIATE IN COLLECTION processed_documents,
+
+-- ============================================================================
+-- STAGE 5: EXTRACT RELATIONSHIPS
+-- ============================================================================
+-- Extracts relationships between entities
+-- Creates Relationship edges between entities
+-- Enables graph traversal and relationship queries
+-- ============================================================================
+STEP extract_relationships
+    EXTRACT RELATIONSHIPS
+    USING LLM "gpt-4"
+    PARAMETERS (
+        temperature=0.3,
+        max_tokens=2000
+    )
+    PROMPT "Identify relationships between entities. Extract relationships such as: works_for, located_in, owns, partners_with, competes_with, supplies, uses, develops, manages, reports_to, etc. For each relationship, provide: source entity, target entity, relationship type, strength/confidence, and context."
+    STORE AS EDGE TYPE Relationship
+    STORE INTERMEDIATE IN COLLECTION processed_documents,
+
+-- ============================================================================
+-- STAGE 6: INDEX
+-- ============================================================================
+-- Creates indexes for fast retrieval
+-- Indexes: vector embeddings, text content, entity names
+-- Enables fast search and querying
+-- ============================================================================
+STEP index
+    INDEX
+    PARAMETERS (
+        index_types=["vector", "text", "entity"],
+        vector_index_type="hnsw",
+        text_index_type="fulltext"
+    )
+    STORE INTERMEDIATE IN COLLECTION processed_documents
+]
+
+-- ============================================================================
+-- PIPELINE METADATA
+-- ============================================================================
+-- This pipeline processes documents through the following stages:
+-- 1. Extract: Reads and parses documents
+-- 2. Chunk: Splits into semantic chunks
+-- 3. Embed: Generates vector embeddings
+-- 4. Extract Entities: Identifies named entities
+-- 5. Extract Relationships: Builds knowledge graph
+-- 6. Index: Creates search indexes
+--
+-- Output:
+-- - Document nodes (with full content)
+-- - Chunk nodes (with embeddings)
+-- - Entity nodes (with types and descriptions)
+-- - Relationship edges (connecting entities)
+-- - Table nodes (if tables detected)
+-- - Image nodes (if images detected)
+-- ============================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

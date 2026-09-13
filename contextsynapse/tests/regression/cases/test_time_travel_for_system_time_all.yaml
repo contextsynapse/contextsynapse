@@ -1,0 +1,37 @@
+id: test_timetravel_004
+name: Time Travel - Query FOR SYSTEM_TIME ALL
+description: 'Tests SELECT query with FOR SYSTEM_TIME ALL clause to get all versions.
+
+  Requires temporal queries to be enabled.
+
+  '
+query: 'CREATE NODE Person { name: "Charlie", age: 20 };
+
+  UPDATE NODE Person SET { age: 21 } WHERE name = "Charlie";
+
+  UPDATE NODE Person SET { age: 22, city: "NYC" } WHERE name = "Charlie";
+
+
+  SELECT * FROM Person FOR SYSTEM_TIME ALL WHERE name = "Charlie"'
+namespace: timetravel_test
+expected_success: true
+tags:
+- time_travel
+- temporal
+- versions
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: 'Tests SELECT query with FOR SYSTEM_TIME ALL clause.
+
+  Requires temporal queries to be enabled.
+
+  Should return all versions of the node.
+
+  '
+skip: true
+skip_reason: Temporal queries not fully implemented
+priority: 6
+prerequisites: []
+requires_data: false
+requires_files: []

@@ -1,0 +1,29 @@
+id: test_delete_002
+name: DELETE NODE - Basic
+description: Tests basic DELETE NODE query to remove nodes from the graph
+query: |
+  CREATE NODE Person { name: "Alice", age: 30 };
+  CREATE NODE Person { name: "Bob", age: 25 };
+  CREATE NODE Person { name: "Charlie", age: 35 };
+  DELETE NODE Person WHERE age > 30
+namespace: regression_test
+expected_success: true
+expected_nodes: 0
+expected_edges: null
+tags:
+- basic
+- delete
+- node
+verify_persistence: true
+test_both_modes: true
+approved_by: system
+notes: |
+  Tests DELETE NODE query to remove nodes matching WHERE conditions.
+  Creates multiple nodes and deletes those matching the condition.
+  Verifies that DELETE NODE correctly removes nodes.
+priority: 2
+prerequisites: []
+requires_data: false
+requires_files: []
+
+

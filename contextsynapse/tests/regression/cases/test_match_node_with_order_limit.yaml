@@ -1,0 +1,31 @@
+id: test_match_002
+name: MATCH NODE - With ORDER BY and LIMIT
+description: Tests MATCH NODE query with ORDER BY and LIMIT clauses
+query: |
+  CREATE NODE Product { name: "Product A", price: 100, stock: 50 };
+  CREATE NODE Product { name: "Product B", price: 200, stock: 30 };
+  CREATE NODE Product { name: "Product C", price: 150, stock: 40 };
+  CREATE NODE Product { name: "Product D", price: 80, stock: 60 };
+  MATCH NODE Product AS p WHERE price > 90 RETURN p ORDER BY price DESC LIMIT 2
+namespace: regression_test
+expected_success: true
+expected_nodes: 2
+expected_edges: null
+tags:
+- basic
+- match
+- query
+- node
+- order_by
+- limit
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: |
+  Tests MATCH NODE with ORDER BY and LIMIT clauses.
+  Verifies that results are sorted correctly and limited to specified count.
+priority: 2
+prerequisites: []
+requires_data: false
+requires_files: []
+

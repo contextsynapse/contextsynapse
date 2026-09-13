@@ -1,0 +1,57 @@
+-- ============================================================================
+-- SIMPLE DOCUMENT INGESTION PIPELINE
+-- ============================================================================
+-- A lightweight pipeline for basic document ingestion
+-- Extracts text and creates document nodes only
+-- No chunking, embedding, or entity extraction
+--
+-- Usage:
+--   RUN PIPELINE simple_ingestion WITH file_path="path/to/document.pdf";
+-- ============================================================================
+
+CREATE PIPELINE simple_ingestion
+IN NAMESPACE default
+SOURCE COLLECTION raw_documents
+TARGET COLLECTION documents
+DESCRIPTION "Simple document ingestion - extract text only"
+
+STAGES = [
+STEP extract
+    EXTRACT FROM FILE "{file_path}"
+    USING READER "AUTO"
+    DETECT (TEXT)
+    STORE AS NODE TYPE Document
+    STORE INTERMEDIATE IN COLLECTION raw_documents
+]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

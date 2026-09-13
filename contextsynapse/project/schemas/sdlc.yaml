@@ -1,0 +1,369 @@
+meta:
+  name: sdlc
+  version: "1.0"
+  description: "Software Development Lifecycle — requirements, design, code, tests, evolution"
+
+# ═══════════════════════════════════════════════════════════════════
+# SDLC Context Schema
+# ═══════════════════════════════════════════════════════════════════
+#
+# This schema defines how software development artifacts relate to
+# each other. The flow is:
+#
+#   Intent  →  Design  →  Build  →  Verify  →  Evolution
+#   (why)      (how)      (what)    (proof)    (change)
+#
+# Each layer produces artifacts that the next layer consumes.
+# Agents read the graph to understand what exists, what's missing,
+# and what's changed.
+#
+# To add a new node type: add it under the right layer.
+# To add a new edge type: add it under relationships.
+# To add a new scanner mapping: add it under sources.
+# Everything else reads from this file.
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Layers: the SDLC lifecycle stages ──────────────────────────────
+# Each layer has node types, a coverage weight (how important it is
+# for overall coverage scoring), and whether it's optional.
+
+layers:
+  intent:
+    description: "What the system should do — requirements, stories, goals"
+    weight: 0.25
+    optional: false
+    node_types:
+      Requirement:
+        description: "A functional or business requirement"
+        properties: { content: required, source: optional, version: required }
+        id_prefix: "req"
+
+      UserStory:
+        description: "A user-facing story describing desired behavior"
+        properties: { content: required, source: optional, version: required }
+        id_prefix: "story"
+
+      Goal:
+        description: "A high-level objective or vision"
+        properties: { content: required, source: optional, version: required }
+        id_prefix: "goal"
+
+  design:
+    description: "How the system is built — decisions, patterns, constraints"
+    weight: 0.20
+    optional: false
+    node_types:
+      ArchDecision:
+        description: "An architecture or design decision"
+        properties: { decision: required, rationale: optional, source: optional, version: required }
+        id_prefix: "arch"
+
+      Pattern:
+        description: "A design pattern applied to the system"
+        properties: { name: required, description: optional, version: required }
+        id_prefix: "pattern"
+
+      Constraint:
+        description: "A technical or business constraint"
+        properties: { description: required, source: optional, version: required }
+        id_prefix: "constraint"
+
+  build:
+    description: "What was built — code modules, APIs, data models"
+    weight: 0.30
+    optional: false
+    node_types:
+      CodeModule:
+        description: "A source code module or file"
+        properties: { summary: required, path: optional, version: required }
+        id_prefix: "code"
+
+      APIContract:
+        description: "An API endpoint or interface"
+        properties: { method: required, path: required, source: optional, version: required }
+        id_prefix: "api"
+
+      DataModel:
+        description: "A data schema or model definition"
+        properties: { name: required, description: optional, version: required }
+        id_prefix: "model"
+
+  verify:
+    description: "Proof that it works — tests, results, known issues"
+    weight: 0.20
+    optional: false
+    node_types:
+      TestCase:
+        description: "A test specification"
+        properties: { what: required, how: optional, version: required }
+        id_prefix: "tc"
+
+      TestResult:
+        description: "A test execution result"
+        properties: { test_case_id: required, passed: required, version: required }
+        id_prefix: "result"
+
+      KnownIssue:
+        description: "A known bug or issue"
+        properties: { description: required, severity: optional, source: optional, version: required }
+        id_prefix: "issue"
+
+  evolution:
+    description: "How the system changes — PRs, commits, migrations"
+    weight: 0.05
+    optional: true
+    node_types:
+      ChangeRecord:
+        description: "A record of change (high-churn file, commit pattern)"
+        properties: { description: required, author: optional, commit_count: optional, version: required }
+        id_prefix: "churn"
+
+      PullRequest:
+        description: "A pull request or merge request"
+        properties: { description: required, author: optional, state: optional, version: required }
+        id_prefix: "pr"
+
+      Preservation:
+        description: "An API or contract that must be preserved"
+        properties: { what: required, version: required }
+        id_prefix: "preserve"
+
+      Migration:
+        description: "A migration from one component to another"
+        properties: { from_component: required, to_component: required, version: required }
+        id_prefix: "migration"
+
+  team:
+    description: "Who built it — contributors, project metadata"
+    weight: 0.0
+    optional: true
+    node_types:
+      Contributor:
+        description: "A person who contributed to the project"
+        properties: { name: required, commit_count: optional, version: required }
+        id_prefix: "contributor"
+
+      Project:
+        description: "Root project node — safety net for orphan nodes"
+        properties: { name: required, version: required }
+        id_prefix: "project"
+
+
+# ── Relationships: how nodes connect across layers ─────────────────
+#
+# The flow follows the SDLC lifecycle:
+#
+#   Goal ──MOTIVATES──→ Requirement
+#   UserStory ──REFINES──→ Requirement
+#   ArchDecision ──GOVERNS──→ CodeModule
+#   CodeModule ──IMPLEMENTS──→ Requirement
+#   TestCase ──SATISFIES──→ Requirement
+#   TestCase ──TESTS──→ CodeModule
+#
+# This creates a traceability chain:
+#   Why (Goal) → What (Requirement) → How (Decision) → Built (Code) → Proven (Test)
+
+relationships:
+  # ── Intent → Design (why leads to how) ──────────────────────────
+  MOTIVATES:
+    source: Goal
+    target: Requirement
+    description: "A goal motivates a requirement"
+    cross_layer: [intent, intent]
+
+  REFINES:
+    source: UserStory
+    target: Requirement
+    description: "A user story elaborates a requirement"
+    cross_layer: [intent, intent]
+
+  CONSTRAINED_BY:
+    source: Requirement
+    target: Constraint
+    description: "A requirement is constrained by a rule"
+    cross_layer: [intent, design]
+
+  # ── Design → Build (how leads to what's built) ──────────────────
+  GOVERNS:
+    source: ArchDecision
+    target: CodeModule
+    description: "A decision governs how a module is built"
+    cross_layer: [design, build]
+
+  APPLIES:
+    source: Pattern
+    target: CodeModule
+    description: "A design pattern is applied to a module"
+    cross_layer: [design, build]
+
+  # ── Build → Intent (what's built traces to why) ─────────────────
+  IMPLEMENTS:
+    source: CodeModule
+    target: Requirement
+    description: "A module implements a requirement"
+    cross_layer: [build, intent]
+
+  EXPOSES:
+    source: CodeModule
+    target: APIContract
+    description: "A module exposes an API endpoint"
+    cross_layer: [build, build]
+
+  USES:
+    source: CodeModule
+    target: DataModel
+    description: "A module uses a data model"
+    cross_layer: [build, build]
+
+  DEPENDS_ON:
+    source: CodeModule
+    target: CodeModule
+    description: "A module depends on another module"
+    cross_layer: [build, build]
+
+  # ── Verify → Build + Intent (proof traces to what and why) ──────
+  TESTS:
+    source: TestCase
+    target: CodeModule
+    description: "A test exercises a code module"
+    cross_layer: [verify, build]
+
+  SATISFIES:
+    source: TestCase
+    target: Requirement
+    description: "A test satisfies a requirement"
+    cross_layer: [verify, intent]
+
+  VALIDATES:
+    source: TestResult
+    target: TestCase
+    description: "A result validates a test case"
+    cross_layer: [verify, verify]
+
+  AFFECTS:
+    source: KnownIssue
+    target: CodeModule
+    description: "A known issue affects a module"
+    cross_layer: [verify, build]
+
+  # ── Evolution → Build (changes trace to what changed) ───────────
+  MODIFIES:
+    source: ChangeRecord
+    target: CodeModule
+    description: "A change record modifies a module"
+    cross_layer: [evolution, build]
+
+  PRESERVES:
+    source: Preservation
+    target: APIContract
+    description: "A preservation protects an API contract"
+    cross_layer: [evolution, build]
+
+  STRANGLES:
+    source: Migration
+    target: CodeModule
+    description: "A migration strangles an old module"
+    cross_layer: [evolution, build]
+
+  REPLACES:
+    source: CodeModule
+    target: CodeModule
+    description: "A new module replaces an old one"
+    cross_layer: [build, build]
+
+  # ── Team → Build + Evolution (who did what) ─────────────────────
+  AUTHORED:
+    source: Contributor
+    target: CodeModule
+    description: "A contributor authored a module"
+    cross_layer: [team, build]
+
+  AUTHORED_PR:
+    source: Contributor
+    target: PullRequest
+    description: "A contributor authored a pull request"
+    cross_layer: [team, evolution]
+
+  OPENED:
+    source: Contributor
+    target: KnownIssue
+    description: "A contributor opened an issue"
+    cross_layer: [team, verify]
+
+  PR_IMPLEMENTS:
+    source: PullRequest
+    target: Requirement
+    description: "A pull request implements a requirement"
+    cross_layer: [evolution, intent]
+
+  PR_FIXES:
+    source: PullRequest
+    target: KnownIssue
+    description: "A pull request fixes an issue"
+    cross_layer: [evolution, verify]
+
+  # ── Fallback ────────────────────────────────────────────────────
+  HAS_NODE:
+    source: Project
+    target: "*"
+    description: "Safety net — connects orphan nodes to the project root"
+    cross_layer: [team, "*"]
+
+
+# ── Sources: how external data maps to node types ─────────────────
+#
+# Each source (GitHub, Jira, spec document, git) produces specific
+# node types. Scanners use these mappings instead of hardcoding.
+
+sources:
+  github:
+    issue_label_map:
+      bug: KnownIssue
+      feature: Requirement
+      enhancement: Requirement
+      "feature request": Requirement
+    default_issue_type: UserStory
+
+  jira:
+    type_map:
+      bug: KnownIssue
+      story: UserStory
+      epic: Goal
+      task: Requirement
+      sub-task: Requirement
+
+  spec_document:
+    # Section header keywords → node type
+    # Order matters: more specific matches before general ones
+    section_map:
+      - keywords: [constraint, non-functional, nfr, limitation, restriction]
+        node_type: Constraint
+      - keywords: [requirement, functional requirement, feature, features]
+        node_type: Requirement
+      - keywords: [architecture, design decision, design, technical decision, adr]
+        node_type: ArchDecision
+      - keywords: [acceptance criteria, acceptance, test case, test plan, verification]
+        node_type: TestCase
+      - keywords: [goal, objective, vision, purpose]
+        node_type: Goal
+      - keywords: [user story, user stories, story, stories, epic]
+        node_type: UserStory
+      - keywords: [data model, schema, database, data structure]
+        node_type: DataModel
+      - keywords: [api, endpoint, interface, contract]
+        node_type: APIContract
+
+  repo_scanner:
+    # What each file scanner produces
+    readme: Requirement
+    source_modules: CodeModule
+    tests: TestCase
+    docs: ArchDecision
+    api_routes: APIContract
+    git_history: ChangeRecord
+    git_metadata: Project
+    git_contributors: Contributor
+    github_issues: "{from_label_map}"
+    github_pulls: PullRequest
+    github_contributors: Contributor
+    jira_tickets: "{from_type_map}"

@@ -1,0 +1,52 @@
+name: Earnings Calendar
+description: "Quarterly earnings dates, results, guidance — pre and post earnings signals"
+type: calendar
+version: "1.0"
+active: true
+
+connector:
+  type: rss
+  sources:
+    - "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms"
+    - "https://www.moneycontrol.com/rss/results.xml"
+  schedule: "0 */2 * * *"
+  poll_interval_minutes: 120
+  filter:
+    topics:
+      - quarterly results
+      - Q1 results
+      - Q2 results
+      - Q3 results
+      - Q4 results
+      - earnings
+      - profit
+      - revenue
+      - guidance
+      - board meeting
+      - dividend
+    exclude:
+      - cricket
+
+schema:
+  node_type: EarningsSignal
+  fields:
+    company: { type: string }
+    quarter: { type: string }
+    revenue: { type: float }
+    profit: { type: float }
+    surprise: { type: enum, values: [beat, miss, inline] }
+  extraction_strategy: news_article
+
+hierarchy:
+  affects_sectors: []
+  upstream_of: ""
+  weight: 0.8
+  level: market
+
+decay:
+  rate: 0.05
+  profile: earnings_season
+
+relevance:
+  sectors: []
+  keywords: ["earnings", "results", "guidance", "profit", "revenue", "EPS"]

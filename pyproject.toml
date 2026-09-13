@@ -1,0 +1,164 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "contextsynapse"
+version = "1.0.0"
+description = "ContextSynapse — the shared brain for AI agents — ingest knowledge, build connections, deliver context to any LLM"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+requires-python = ">=3.10"
+authors = [
+    {name = "ContextSynapse Contributors"},
+]
+keywords = ["graph-database", "rag", "agentic-ai", "knowledge-graph", "context-service"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Database :: Database Engines/Servers",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+# Core runtime dependencies (lightweight — no ML frameworks)
+dependencies = [
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "pydantic>=2.5.0",
+    "pyyaml>=6.0",
+    "python-multipart>=0.0.6",
+    "jinja2>=3.1.0",
+    "aiofiles>=23.2.0",
+    "networkx>=3.2.0",
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "whoosh>=2.7.4",
+    "scikit-learn>=1.3.0",
+    "click>=8.1.0",
+    "rich>=13.7.0",
+    "lark>=1.1.0",
+    "orjson>=3.9.0",
+    "beautifulsoup4>=4.12.0",
+    "python-dotenv>=1.0.0",
+    "redis>=5.0.0",
+    "requests>=2.31.0",
+    "httpx>=0.25.0",
+    "aiohttp>=3.9.0",
+    "python-jose[cryptography]>=3.3.0",
+    "passlib[bcrypt]>=1.7.0",
+    "structlog>=23.2.0",
+    "slowapi>=0.1.9",
+]
+
+[project.optional-dependencies]
+# Production extras (monitoring, process management, caching)
+prod = [
+    "gunicorn>=21.2.0",
+    "prometheus-client>=0.19.0",
+    "psutil>=5.9.0",
+    "msgpack>=1.0.7",
+    "redis>=5.0.0",
+]
+# Vector database backends
+vector = [
+    "faiss-cpu>=1.7.4",
+    "chromadb>=0.4.18",
+    "sentence-transformers>=2.2.2",
+]
+# LLM provider clients
+llm = [
+    "openai>=1.3.0",
+    "anthropic>=0.7.0",
+    "google-generativeai>=0.3.0",
+    "cohere>=4.37.0",
+    "ollama>=0.1.7",
+]
+# MCP server
+mcp = [
+    "mcp>=1.0.0",
+]
+# Cloud storage backends
+cloud = [
+    "boto3>=1.28.0",                           # AWS S3 / MinIO / R2
+    "google-cloud-storage>=2.10.0",            # Google Cloud Storage
+    "azure-storage-blob>=12.17.0",             # Azure Blob Storage
+    "azure-identity>=1.14.0",                  # Azure DefaultAzureCredential
+]
+# Development tools
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.4.0",
+    "mypy>=1.7.0",
+    "pre-commit>=3.5.0",
+    "httpx>=0.25.0",
+    "pyngrok>=7.0.0",
+]
+# Everything
+plugins = []
+all = [
+    "contextsynapse[prod,vector,llm,mcp,cloud,dev]",
+]
+
+[project.scripts]
+contextsynapse = "contextsynapse.cli:main"
+contextsynapse-demo = "scripts.demo_session:main"
+contextsynapse-ingest = "scripts.ingest_repo:main"
+
+[project.entry-points."contextsynapse.adapters"]
+# Adapter discovery entry point
+
+[project.urls]
+Homepage = "https://github.com/contextsynapse/contextsynapse"
+Documentation = "https://github.com/contextsynapse/contextsynapse/tree/main/docs"
+Repository = "https://github.com/contextsynapse/contextsynapse"
+Issues = "https://github.com/contextsynapse/contextsynapse/issues"
+
+[tool.setuptools.packages.find]
+include = ["contextsynapse*"]
+exclude = ["tests*", "frontend*", "scripts*", "docs*", "examples*"]
+
+[tool.setuptools.package-data]
+contextsynapse = ["*.yaml", "*.yml", "*.json", "*.lark", "*.ebnf"]
+
+# ── Ruff (replaces black + flake8 + isort) ──────────────────────────
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+ignore = ["E501", "B905", "SIM108"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["contextsynapse"]
+
+# ── Pytest ───────────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short --strict-markers --color=yes -ra --maxfail=5"
+markers = [
+    "core: Core functionality tests",
+    "unit: Unit tests not requiring backend",
+    "integration: Integration tests requiring backend",
+    "performance: Performance and scalability tests",
+    "slow: Tests that take longer to run",
+    "smoke: Quick smoke tests",
+]
+asyncio_mode = "auto"
+
+# ── Mypy ─────────────────────────────────────────────────────────────
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true

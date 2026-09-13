@@ -1,0 +1,72 @@
+# Rules & Standards Extraction Schema
+# Used when ingesting coding standards, design guidelines, compliance rules,
+# and policy documents into a rules context.
+
+name: rules
+
+node_types:
+  Rule:
+    fields: [name, description, severity, scope, rationale]
+    required: [name]
+    description: "A specific rule, guideline, or best practice to follow"
+
+  Standard:
+    fields: [name, version, issuer, description, url]
+    required: [name]
+    description: "A formal standard or specification (e.g. ISO, RFC, WCAG)"
+
+  Policy:
+    fields: [name, description, owner, effective_date, status]
+    required: [name]
+    description: "An organizational policy or governance document"
+
+  Guideline:
+    fields: [name, description, category, priority]
+    required: [name]
+    description: "A recommended practice or advisory guideline"
+
+  Constraint:
+    fields: [name, description, type, severity]
+    required: [name]
+    description: "A technical or business constraint (type: technical, legal, regulatory, budget)"
+
+  Compliance:
+    fields: [name, framework, status, due_date, description]
+    required: [name]
+    description: "A compliance requirement or certification target"
+
+edge_types:
+  ENFORCES:
+    source: Policy
+    target: Rule
+  APPLIES_TO:
+    source: Rule
+    target: Constraint
+  SUPERSEDES:
+    source: Rule
+    target: Rule
+  CONFLICTS_WITH:
+    source: Rule
+    target: Rule
+  DERIVED_FROM:
+    source: Rule
+    target: Standard
+  REQUIRES_COMPLIANCE:
+    source: Compliance
+    target: Standard
+  CONTAINS:
+    source: Policy
+    target: Guideline
+
+fact_types:
+  - type: Requirement
+    fields: [title, priority, status, source_text]
+    description: "A mandatory requirement extracted from rules or standards"
+
+  - type: Exemption
+    fields: [rule, condition, justification, source_text]
+    description: "An exception or exemption to a rule under specific conditions"
+
+  - type: Penalty
+    fields: [violation, consequence, severity, source_text]
+    description: "A consequence of non-compliance with a rule or standard"

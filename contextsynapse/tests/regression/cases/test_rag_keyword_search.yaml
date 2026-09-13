@@ -1,0 +1,32 @@
+id: test_rag_004
+name: RAG Query - Keyword Search
+description: 'Tests RAG query - RAG automatically includes sparse search in hybrid
+  search.
+
+  Uses simple RAG syntax.
+
+  '
+query: RAG "What is mentioned about revenue?" AT NAMESPACE tcs_regression_test
+namespace: tcs_regression_test
+expected_success: true
+tags:
+- rag
+- keyword_search
+- sparse_search
+- bm25
+- gpt-3.5
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: 'Tests simple RAG query.
+
+  RAG automatically includes sparse search in hybrid search.
+
+  NOTE: Explicit search type parameters are proposed but not yet implemented.
+
+  '
+priority: 5
+prerequisites:
+- RUN_INGESTION_PIPELINE
+requires_data: true
+requires_files: []

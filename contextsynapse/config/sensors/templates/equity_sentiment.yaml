@@ -1,0 +1,48 @@
+template_name: Equity Sentiment
+description: "News NLP, analyst consensus, social media pulse, options market — what the market is thinking about a stock right now."
+category: sentiment
+scope: stock
+tags: [sentiment, nlp, news, analyst, options]
+recommended_for: [equity]
+
+sensors:
+  - name: news_nlp
+    label: News Sentiment NLP
+    description: "Real-time news sentiment scoring using NLP — positive/negative/neutral"
+    impact_type: immediate
+    decay_profile: exponential
+    scope: stock
+    weight: 0.8
+
+  - name: analyst_consensus
+    label: Analyst Consensus
+    description: "Buy/Hold/Sell ratings aggregated across brokerages"
+    impact_type: latent
+    decay_profile: step
+    scope: stock
+    weight: 0.75
+
+  - name: social_buzz
+    label: Social Media Buzz
+    description: "Twitter/Reddit/StockTwits mention volume and sentiment"
+    impact_type: immediate
+    decay_profile: exponential
+    scope: stock
+    weight: 0.5
+
+  - name: options_pcr
+    label: Options Put/Call Ratio
+    description: "Market hedging behaviour — high PCR = fear, low PCR = greed"
+    impact_type: latent
+    decay_profile: exponential
+    scope: stock
+    weight: 0.65
+
+pipeline:
+  connector: rss_news + api
+  sources:
+    - moneycontrol_rss
+    - economictimes_rss
+    - bse_announcements
+  schedule: "*/30 * * * *"
+  enrichment: news_nlp + entity_extraction

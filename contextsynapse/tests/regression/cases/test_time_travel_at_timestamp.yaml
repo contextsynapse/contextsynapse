@@ -1,0 +1,33 @@
+id: test_timetravel_001
+name: Time Travel - Query AT TIMESTAMP
+description: 'Tests SELECT query with AT TIMESTAMP clause for time-travel queries.
+
+  Requires temporal queries to be enabled.
+
+  '
+query: 'CREATE NODE Person { name: "Alice", age: 30 };
+
+
+  SELECT * FROM Person AT TIMESTAMP ''2024-01-01T00:00:00Z'' WHERE name = "Alice"'
+namespace: timetravel_test
+expected_success: true
+tags:
+- time_travel
+- temporal
+- timestamp
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: 'Tests SELECT query with AT TIMESTAMP clause.
+
+  Requires temporal queries to be enabled.
+
+  Should return node state at specified timestamp.
+
+  '
+skip: false
+skip_reason: ''
+priority: 6
+prerequisites: []
+requires_data: false
+requires_files: []

@@ -1,0 +1,9 @@
+name: nsdl_fpi
+connector_type: nsdl_fpi
+target_context_id: fii_flows
+poll_interval_minutes: 1440
+active: true
+config:
+  segments:
+    - equity
+    - debt

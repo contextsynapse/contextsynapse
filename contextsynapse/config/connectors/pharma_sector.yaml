@@ -1,0 +1,20 @@
+name: pharma_sector
+connector_type: stock_price
+target_context_id: sector_pharma
+poll_interval_minutes: 5
+active: true
+config:
+  exchange: NSE
+  period: "1d"
+  interval: "1d"
+  symbols:
+    - "SUNPHARMA.NS"
+    - "DRREDDY.NS"
+    - "CIPLA.NS"
+    - "DIVISLAB.NS"
+    - "APOLLOHOSP.NS"
+    - "BIOCON.NS"
+    - "AUROPHARMA.NS"
+    - "LUPIN.NS"
+    - "TORNTPHARM.NS"
+    - "ALKEM.NS"

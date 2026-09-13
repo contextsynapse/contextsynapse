@@ -1,0 +1,236 @@
+# screener_meta.yaml — Stock screener field definitions and configuration
+# All fields, groups, operators, and periods are defined here.
+# The frontend reads this from API — nothing is hardcoded in JS.
+
+field_groups:
+  - id: leverage
+    label: "Leverage"
+    fields:
+      - id: total_debt
+        label: "Total Debt"
+        unit: "Rs.Cr."
+        description: "Total borrowings as per latest annual numbers"
+        type: number
+      - id: debt_to_equity
+        label: "Debt / Equity"
+        unit: "x"
+        description: "Total debt divided by net worth"
+        type: number
+      - id: interest_coverage
+        label: "Interest Coverage"
+        unit: "x"
+        description: "EBIT divided by interest expense"
+        type: number
+
+  - id: profitability
+    label: "Profitability"
+    fields:
+      - id: pat
+        label: "Net Profit (PAT)"
+        unit: "Rs.Cr."
+        description: "Profit after tax"
+        type: number
+      - id: ebitda
+        label: "EBITDA"
+        unit: "Rs.Cr."
+        description: "Earnings before interest, taxes, depreciation & amortisation"
+        type: number
+      - id: roe
+        label: "Return on Equity"
+        unit: "%"
+        description: "Net profit as % of shareholder equity"
+        type: number
+      - id: roce
+        label: "Return on Capital Employed"
+        unit: "%"
+        description: "EBIT as % of capital employed"
+        type: number
+      - id: net_margin
+        label: "Net Profit Margin"
+        unit: "%"
+        description: "PAT as % of revenue"
+        type: number
+      - id: ebitda_margin
+        label: "EBITDA Margin"
+        unit: "%"
+        description: "EBITDA as % of revenue"
+        type: number
+
+  - id: scale
+    label: "Scale"
+    fields:
+      - id: revenue
+        label: "Revenue / Sales"
+        unit: "Rs.Cr."
+        description: "Total revenue from operations"
+        type: number
+      - id: market_cap
+        label: "Market Capitalisation"
+        unit: "Rs.Cr."
+        description: "Current market capitalisation"
+        type: number
+      - id: total_assets
+        label: "Total Assets"
+        unit: "Rs.Cr."
+        description: "Total assets on balance sheet"
+        type: number
+      - id: net_worth
+        label: "Net Worth"
+        unit: "Rs.Cr."
+        description: "Shareholder equity / book value"
+        type: number
+
+  - id: valuation
+    label: "Valuation"
+    fields:
+      - id: pe_ratio
+        label: "PE Ratio"
+        unit: "x"
+        description: "Price to earnings ratio (trailing)"
+        type: number
+      - id: pb_ratio
+        label: "PB Ratio"
+        unit: "x"
+        description: "Price to book value ratio"
+        type: number
+      - id: ev_ebitda
+        label: "EV / EBITDA"
+        unit: "x"
+        description: "Enterprise value to EBITDA"
+        type: number
+
+  - id: growth
+    label: "Growth"
+    fields:
+      - id: revenue_growth
+        label: "Revenue Growth (YoY)"
+        unit: "%"
+        description: "Year-on-year revenue growth"
+        type: number
+      - id: pat_growth
+        label: "PAT Growth (YoY)"
+        unit: "%"
+        description: "Year-on-year profit growth"
+        type: number
+      - id: eps_growth
+        label: "EPS Growth (YoY)"
+        unit: "%"
+        description: "Year-on-year earnings per share growth"
+        type: number
+
+  - id: liquidity
+    label: "Liquidity"
+    fields:
+      - id: current_ratio
+        label: "Current Ratio"
+        unit: "x"
+        description: "Current assets divided by current liabilities"
+        type: number
+      - id: cash_equivalents
+        label: "Cash & Equivalents"
+        unit: "Rs.Cr."
+        description: "Cash and short-term investments"
+        type: number
+
+  - id: market
+    label: "Market Data"
+    fields:
+      - id: current_price
+        label: "Current Price"
+        unit: "Rs."
+        description: "Last traded price"
+        type: number
+      - id: high_52w
+        label: "52-Week High"
+        unit: "Rs."
+        description: "Highest price in last 52 weeks"
+        type: number
+      - id: low_52w
+        label: "52-Week Low"
+        unit: "Rs."
+        description: "Lowest price in last 52 weeks"
+        type: number
+      - id: dividend_yield
+        label: "Dividend Yield"
+        unit: "%"
+        description: "Annual dividend as % of current price"
+        type: number
+
+operators:
+  - id: gt
+    label: ">"
+    description: "Greater than"
+  - id: gte
+    label: ">="
+    description: "Greater than or equal to"
+  - id: lt
+    label: "<"
+    description: "Less than"
+  - id: lte
+    label: "<="
+    description: "Less than or equal to"
+  - id: eq
+    label: "="
+    description: "Equals"
+
+result_periods:
+  - id: "Jun 2026"
+    label: "Jun 2026"
+    period_type: quarterly
+    description: "Q1 FY27 results"
+  - id: "Mar 2026"
+    label: "Mar 2026"
+    period_type: annual
+    description: "FY26 annual results"
+  - id: "Dec 2025"
+    label: "Dec 2025"
+    period_type: quarterly
+    description: "Q3 FY26 results"
+  - id: "Sep 2025"
+    label: "Sep 2025"
+    period_type: quarterly
+    description: "Q2 FY26 results"
+  - id: "Mar 2025"
+    label: "Mar 2025"
+    period_type: annual
+    description: "FY25 annual results"
+
+result_columns:
+  - id: name
+    label: "Company"
+    width: 200
+  - id: sector
+    label: "Sector"
+    width: 120
+  - id: market_cap
+    label: "Mkt Cap (Cr.)"
+    width: 120
+    align: right
+  - id: current_price
+    label: "CMP (Rs.)"
+    width: 100
+    align: right
+  - id: pe_ratio
+    label: "PE"
+    width: 80
+    align: right
+  - id: roe
+    label: "ROE %"
+    width: 80
+    align: right
+  - id: revenue
+    label: "Revenue (Cr.)"
+    width: 120
+    align: right
+  - id: pat
+    label: "PAT (Cr.)"
+    width: 100
+    align: right
+  - id: total_debt
+    label: "Debt (Cr.)"
+    width: 100
+    align: right
+  - id: debt_to_equity
+    label: "D/E"
+    width: 70
+    align: right

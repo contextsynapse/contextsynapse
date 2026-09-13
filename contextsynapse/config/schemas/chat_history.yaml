@@ -1,0 +1,90 @@
+# Chat History Extraction Schema
+# Used when ingesting AI chat exports (ChatGPT, Claude, Gemini).
+# The pipeline parses conversations into text, then extracts these node/edge types.
+
+name: chat_history
+
+node_types:
+  Conversation:
+    fields: [name, source, model, message_count, created_at, updated_at]
+    required: [name]
+    description: "A single chat conversation/thread"
+
+  Topic:
+    fields: [name, description, category]
+    required: [name]
+    description: "A topic or subject discussed in the conversation"
+
+  Person:
+    fields: [name, role, affiliation]
+    required: [name]
+    description: "A person mentioned in the conversation"
+
+  Organization:
+    fields: [name, type, industry]
+    required: [name]
+    description: "A company, product, or organization discussed"
+
+  Concept:
+    fields: [name, description, domain]
+    required: [name]
+    description: "A technical concept, framework, or idea discussed"
+
+  Decision:
+    fields: [statement, rationale, context]
+    required: [statement]
+    description: "A decision or conclusion reached during the conversation"
+
+  Task:
+    fields: [title, description, status, assigned_to]
+    required: [title]
+    description: "A task, action item, or todo discussed or created"
+
+  Fact:
+    fields: [statement, source, confidence]
+    required: [statement]
+    description: "A factual claim, instruction, or preference expressed"
+
+  CodeSnippet:
+    fields: [name, language, description, purpose]
+    required: [name]
+    description: "A code snippet, function, or technical solution discussed"
+
+edge_types:
+  DISCUSSES:
+    source: Conversation
+    target: Topic
+  MENTIONS:
+    source: Conversation
+    target: Person
+  REFERENCES:
+    source: Conversation
+    target: Organization
+  USES_CONCEPT:
+    source: Conversation
+    target: Concept
+  DECIDED:
+    source: Conversation
+    target: Decision
+  ASSIGNED:
+    source: Conversation
+    target: Task
+  RELATED_TO:
+    source: Topic
+    target: Topic
+  WORKS_FOR:
+    source: Person
+    target: Organization
+
+fact_types:
+  - type: Preference
+    fields: [statement, confidence, context]
+    description: "A user preference or instruction expressed across conversations"
+
+  - type: Insight
+    fields: [statement, source_conversation, confidence]
+    description: "A key insight or learning from the conversation"
+
+  - type: Instruction
+    fields: [statement, context, scope]
+    description: "An instruction, rule, or guideline discussed"

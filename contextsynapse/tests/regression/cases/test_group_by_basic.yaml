@@ -1,0 +1,56 @@
+id: test_groupby_001
+name: GROUP BY - Basic Aggregation
+description: Tests SELECT with GROUP BY clause for basic aggregation by department
+query: |
+  CREATE NODE Employee { name: "Alice", department: "Engineering", salary: 100000 };
+  CREATE NODE Employee { name: "Bob", department: "Engineering", salary: 110000 };
+  CREATE NODE Employee { name: "Charlie", department: "Sales", salary: 90000 };
+  CREATE NODE Employee { name: "David", department: "Sales", salary: 95000 };
+  
+  SELECT department, COUNT(*), AVG(salary) 
+  FROM Employee 
+  GROUP BY department
+namespace: groupby_test
+expected_success: true
+expected_nodes: 2
+tags:
+- group_by
+- aggregation
+- basic
+verify_persistence: true
+test_both_modes: true
+approved_by: system
+notes: Tests basic GROUP BY with COUNT and AVG aggregations
+skip: false
+priority: 3
+prerequisites: []
+requires_data: false
+requires_files: []
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

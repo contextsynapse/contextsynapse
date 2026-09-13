@@ -1,0 +1,58 @@
+name: market_analysis
+description: "Stock and market analysis — tracks companies, sectors, and financial indicators"
+
+entity_types:
+  - Company
+  - Sector
+  - Index
+  - Fund
+
+indicator_types:
+  - StockPrice
+  - Volume
+  - EPS
+  - PE_Ratio
+  - MarketCap
+  - Revenue
+
+signals:
+  - type: sentiment_reversal
+    config:
+      window_hours: 48
+      min_mentions: 3
+
+  - type: threshold_breach
+    config:
+      metric: negative_sentiment_count
+      threshold: 5
+      window_hours: 24
+
+  - type: co_occurrence
+    config:
+      min_count: 3
+      window_days: 7
+
+correlations:
+  - type: entity_vs_indicator
+    config:
+      lag_max_days: 14
+      min_samples: 10
+      min_confidence: 0.6
+
+  - type: cross_entity
+    config:
+      same_domain: true
+      lag_max_days: 7
+
+  - type: geo_sentiment_cluster
+    config:
+      level: country
+      window_days: 30
+
+schedule: daily
+
+quality:
+  min_samples: 10
+  min_confidence: 0.6
+  decay_days: 30
+  max_correlations: 1000

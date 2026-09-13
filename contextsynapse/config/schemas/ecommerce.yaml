@@ -1,0 +1,56 @@
+# E-Commerce Extraction Schema
+# Used when ingesting product listings, marketplace data, reviews, and catalog content.
+
+name: ecommerce
+
+node_types:
+  Product:
+    fields: [name, sku, description, price, currency, stock_status, url, images]
+    required: [name]
+    description: "A product listed for sale on an e-commerce platform"
+
+  Review:
+    fields: [title, body, rating, author, date, verified_purchase, helpful_count]
+    required: [body]
+    description: "A customer review or rating for a product"
+
+  Seller:
+    fields: [name, rating, location, fulfillment_type, reviews_count]
+    required: [name]
+    description: "A seller or merchant offering products"
+
+  Brand:
+    fields: [name, description, country, website]
+    required: [name]
+    description: "A product brand or manufacturer"
+
+  Category:
+    fields: [name, path, description, parent_category]
+    required: [name]
+    description: "A product category or classification"
+
+edge_types:
+  SOLD_BY:
+    source: Product
+    target: Seller
+  REVIEWED:
+    source: Product
+    target: Review
+  MADE_BY:
+    source: Product
+    target: Brand
+  BELONGS_TO:
+    source: Product
+    target: Category
+  PARENT_OF:
+    source: Category
+    target: Category
+
+fact_types:
+  - type: PriceChange
+    fields: [product, old_price, new_price, currency, date, source_text]
+    description: "A price change or discount event for a product"
+
+  - type: Specification
+    fields: [attribute, value, unit, source_text]
+    description: "A product specification or technical attribute"

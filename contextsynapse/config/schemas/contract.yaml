@@ -1,0 +1,48 @@
+# Contract Extraction Schema
+# Used when ingesting legal contracts, agreements, SOWs, and NDAs.
+
+name: contract
+
+node_types:
+  Party:
+    fields: [name, type, address, jurisdiction, signatory, role]
+    required: [name]
+    description: "A party to the contract (individual or organization)"
+
+  Term:
+    fields: [title, description, section, category, effective_date, expiry_date]
+    required: [title]
+    description: "A contractual term, clause, or condition"
+
+  Obligation:
+    fields: [description, party, deadline, type, status]
+    required: [description]
+    description: "A specific obligation or duty imposed on a party"
+
+  Penalty:
+    fields: [description, amount, currency, trigger, party]
+    required: [description]
+    description: "A penalty, fee, or consequence for breach of the contract"
+
+edge_types:
+  BOUND_BY:
+    source: Party
+    target: Term
+  SUBJECT_TO:
+    source: Party
+    target: Obligation
+  GOVERNS:
+    source: Term
+    target: Obligation
+  TRIGGERS:
+    source: Obligation
+    target: Penalty
+
+fact_types:
+  - type: ContractDate
+    fields: [event, date, description, source_text]
+    description: "A significant date in the contract lifecycle (signing, effective, expiry)"
+
+  - type: FinancialTerm
+    fields: [description, amount, currency, schedule, conditions, source_text]
+    description: "A financial term, payment obligation, or compensation clause"

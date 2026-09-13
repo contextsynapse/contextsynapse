@@ -1,0 +1,38 @@
+id: test_rag_001
+name: RAG - Basic Graph Search
+description: 'Tests RAG query with basic graph traversal.
+
+  Uses graph relationships to expand context.
+
+
+  Query flow:
+
+  1. Hybrid search for relevant chunks
+
+  2. Graph traversal from chunks to related entities
+
+  3. LLM generation with expanded context
+
+  '
+namespace: regression_test_graph
+expected_success: true
+query: ''
+tags:
+- rag
+- graph_search
+- hybrid_search
+verify_persistence: true
+test_both_modes: true
+approved_by: system
+notes: 'Tests basic RAG with graph-based search.
+
+  Uses embedding model explicitly.
+
+  Expands context via graph relationships.
+
+  '
+priority: 5
+prerequisites:
+- RUN_INGESTION_PIPELINE
+requires_data: true
+requires_files: []

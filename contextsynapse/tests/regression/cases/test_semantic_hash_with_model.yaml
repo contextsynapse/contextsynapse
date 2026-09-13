@@ -1,0 +1,31 @@
+id: test_semantic_hash_002
+name: Semantic Hash - SEMANTIC_HASH with Model
+description: 'Tests SEMANTIC_HASH function with explicit embedding model.
+
+  Uses text-embedding-ada-002 for hashing.
+
+  '
+query: SELECT SEMANTIC_HASH("This is a test document about artificial intelligence
+  and machine learning") USING MODEL "text-embedding-ada-002"
+namespace: semantic_hash_test
+expected_success: true
+tags:
+- semantic_hash
+- function
+- embedding_model
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: 'Tests SEMANTIC_HASH function with explicit model.
+
+  Should generate semantic hash using specified embedding model.
+
+  Uses text-embedding-ada-002.
+
+  '
+skip: true
+skip_reason: SEMANTIC_HASH operator not implemented
+priority: 6
+prerequisites: []
+requires_data: false
+requires_files: []

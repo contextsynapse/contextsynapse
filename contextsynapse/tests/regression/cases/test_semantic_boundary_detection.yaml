@@ -1,0 +1,33 @@
+id: test_semantic_boundary_002
+name: Semantic Boundary - Detect Boundaries
+description: 'Tests semantic boundary detection on text.
+
+  Detects topic, section, paragraph, and sentence boundaries.
+
+  '
+query: "CREATE NODE Document { \n  title: \"Test Document\",\n  content: \"This is\
+  \ the first paragraph. It discusses artificial intelligence. Machine learning is\
+  \ a subset of AI. This is the second paragraph. It discusses natural language processing.\
+  \ NLP enables computers to understand human language.\"\n};\n\nSELECT * FROM Document\
+  \ WHERE title = \"Test Document\""
+namespace: semantic_boundary_test
+expected_success: true
+tags:
+- semantic_boundary
+- detection
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: 'Tests semantic boundary detection.
+
+  Should detect boundaries in document content.
+
+  NOTE: Actual boundary detection may be performed by pipeline stage or separate function.
+
+  '
+skip: true
+skip_reason: Semantic boundary detection not fully implemented
+priority: 6
+prerequisites: []
+requires_data: false
+requires_files: []

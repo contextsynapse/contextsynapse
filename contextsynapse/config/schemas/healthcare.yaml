@@ -1,0 +1,133 @@
+name: healthcare
+version: "2.0"
+description: "Healthcare domain — patients, conditions, treatments, providers"
+
+node_types:
+  Patient:
+    fields:
+      name: {type: string, required: true, indexed: true}
+      age: {type: int, range_min: 0, range_max: 150}
+      gender: {type: enum, values: [male, female, other, unknown]}
+      condition: {type: string}
+      insurance: {type: string}
+    dedup: {key: [name], merge: latest_wins}
+    min_confidence: 0.0
+    description: "A patient or subject"
+  Condition:
+    fields:
+      name: {type: string, required: true, indexed: true}
+      category: {type: string, indexed: true}
+      severity: {type: enum, values: [mild, moderate, severe, critical]}
+      icd_code: {type: string, pattern: "^[A-Z]\\d"}
+      description: {type: string}
+    dedup: {key: [name], merge: merge_properties}
+    min_confidence: 0.3
+    description: "Medical condition, disease, or diagnosis"
+  Treatment:
+    fields:
+      name: {type: string, required: true, indexed: true}
+      type: {type: enum, values: [medication, therapy, procedure, surgery, lifestyle]}
+      dosage: {type: string}
+      duration: {type: string}
+      effectiveness: {type: string}
+      evidence_level: {type: enum, values: [meta_analysis, clinical_trial, case_study, expert_opinion, anecdotal]}
+    dedup: {key: [name], merge: merge_properties}
+    min_confidence: 0.2
+    description: "Treatment, medication, therapy, or procedure"
+  Provider:
+    fields:
+      name: {type: string, required: true, indexed: true}
+      specialty: {type: string, indexed: true}
+      facility: {type: string}
+      credentials: {type: string}
+    dedup: {key: [name], merge: latest_wins}
+    min_confidence: 0.0
+    description: "Doctor, nurse, therapist, or healthcare facility"
+  Protocol:
+    fields:
+      name: {type: string, required: true, indexed: true}
+      version: {type: string}
+      authority: {type: string}
+      description: {type: string}
+    dedup: {key: [name], merge: merge_properties}
+    min_confidence: 0.3
+    description: "Clinical protocol, guideline, or standard of care"
+  Outcome:
+    fields:
+      description: {type: string, required: true}
+      metric: {type: string}
+      value: {type: string}
+      timeframe: {type: string}
+    dedup: {key: [description], merge: latest_wins}
+    min_confidence: 0.0
+    description: "Treatment outcome or clinical result"
+
+edge_types:
+  DIAGNOSED_WITH:
+    source: Patient
+    target: Condition
+  TREATED_WITH:
+    source: Condition
+    target: Treatment
+    properties:
+      efficacy: {type: float, range_min: 0.0, range_max: 1.0}
+      start_date: {type: date}
+  PROVIDED_BY:
+    source: Treatment
+    target: Provider
+  FOLLOWS:
+    source: Provider
+    target: Protocol
+  RESULTS_IN:
+    source: Treatment
+    target: Outcome
+    properties:
+      measured_at: {type: date}
+  CONTRAINDICATED_WITH:
+    source: Treatment
+    target: Treatment
+    properties:
+      severity: {type: enum, values: [mild, moderate, severe, absolute]}
+      reason: {type: string}
+
+derivation_rules:
+  - when: {node: Condition, has_edge: TREATED_WITH, count: ">3"}
+    action: create_cu
+    params: {topic_from: Condition.name}
+  - when: {node: Treatment, property: evidence_level, equals: meta_analysis}
+    action: boost
+    params: {priority: 1.5}
+  - when: {node: Treatment, shares_field: condition_name, with: Treatment}
+    action: create_edge
+    params: {edge_type: ALTERNATIVE_TO, confidence: 0.6}
+
+fact_types:
+  - type: ClinicalFinding
+    fields: [statement, evidence_level, source_text]
+    description: "Clinical observation, lab result, or diagnostic finding"
+  - type: Contraindication
+    fields: [statement, severity, affected_treatments]
+    description: "Known contraindication or adverse interaction"
+  - type: Guideline
+    fields: [statement, authority, version]
+    description: "Clinical guideline or standard-of-care recommendation"
+
+context_unit:
+  confidence_weights:
+    clinical_trial: 0.30
+    meta_analysis: 0.35
+    case_study: 0.15
+    expert_opinion: 0.10
+    guideline: 0.25
+    anecdotal: 0.05
+  priority_labels: [Condition, Treatment, Protocol, Contraindication]
+  claim_template: "{topic}: {claim} (evidence: {evidence_type}, n={fact_count})"
+  domain_questions:
+    - "What are the contraindications for this treatment?"
+    - "What is the recommended dosage and duration?"
+    - "What outcomes have been observed?"
+    - "Which clinical protocols apply?"
+  zoom_levels:
+    headline: "{topic} ({confidence:.0%}): {claim_short}"
+    summary: "{topic} ({confidence:.0%}): {claim} | Evidence: {evidence_count} sources"
+    full: "{topic} ({confidence:.0%}): {claim} | Answers: {questions} | Clues: {clues} | Evidence: {evidence_ids}"

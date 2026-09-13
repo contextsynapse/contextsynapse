@@ -1,0 +1,20 @@
+name: fmcg_sector
+connector_type: stock_price
+target_context_id: sector_fmcg
+poll_interval_minutes: 5
+active: true
+config:
+  exchange: NSE
+  period: "1d"
+  interval: "1d"
+  symbols:
+    - "HINDUNILVR.NS"
+    - "ITC.NS"
+    - "NESTLEIND.NS"
+    - "BRITANNIA.NS"
+    - "TATACONSUM.NS"
+    - "DABUR.NS"
+    - "MARICO.NS"
+    - "GODREJCP.NS"
+    - "COLPAL.NS"
+    - "EMAMILTD.NS"

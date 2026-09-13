@@ -1,0 +1,35 @@
+id: test_blockchain_004
+name: Blockchain - Get Specific Block
+description: 'Tests GET BLOCK query to get a specific block by index.
+
+  Requires traceability to be enabled.
+
+  '
+query: 'CREATE NODE TestNode { name: "test_node_1" };
+
+  CREATE NODE TestNode { name: "test_node_2" };
+
+
+  GET BLOCK 1'
+namespace: blockchain_test
+expected_success: true
+tags:
+- blockchain
+- traceability
+- get_block
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: 'Tests GET BLOCK query with specific block index.
+
+  Requires traceability to be enabled.
+
+  Should return block at index 1.
+
+  '
+skip: true
+skip_reason: Traceability layer not enabled in default configuration
+priority: 6
+prerequisites: []
+requires_data: false
+requires_files: []

@@ -1,0 +1,48 @@
+# API Specification Extraction Schema
+# Used when ingesting OpenAPI specs, API docs, REST/GraphQL references, and SDK docs.
+
+name: api_spec
+
+node_types:
+  Endpoint:
+    fields: [path, method, summary, description, tags, deprecated, version]
+    required: [path, method]
+    description: "An API endpoint or operation"
+
+  Parameter:
+    fields: [name, location, type, required, description, default, example]
+    required: [name]
+    description: "A request parameter (query, path, header, or body field)"
+
+  Response:
+    fields: [status_code, description, content_type, schema]
+    required: [status_code]
+    description: "A response definition for an API endpoint"
+
+  ErrorCode:
+    fields: [code, message, description, resolution]
+    required: [code]
+    description: "An API error code and its meaning"
+
+edge_types:
+  ACCEPTS:
+    source: Endpoint
+    target: Parameter
+  RETURNS:
+    source: Endpoint
+    target: Response
+  RAISES:
+    source: Endpoint
+    target: ErrorCode
+  CALLS:
+    source: Endpoint
+    target: Endpoint
+
+fact_types:
+  - type: RateLimit
+    fields: [limit, period, scope, source_text]
+    description: "An API rate limit or throttling rule"
+
+  - type: AuthRequirement
+    fields: [type, description, scopes, source_text]
+    description: "An authentication or authorization requirement for an endpoint"

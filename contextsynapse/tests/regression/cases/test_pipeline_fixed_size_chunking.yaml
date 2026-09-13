@@ -1,0 +1,48 @@
+id: test_pipeline_003
+name: Pipeline - Fixed Size Chunking
+description: 'Tests ingestion pipeline with fixed-size chunking strategy.
+
+  No LLM required for chunking (faster).
+
+  Uses text-embedding-ada-002 for embeddings.
+
+  Processes 25-30 pages.
+
+  '
+query: "CREATE PIPELINE regression_fixed_size_pipeline\nIN NAMESPACE tcs_regression_pipeline\n\
+  SOURCE COLLECTION raw_docs\nTARGET COLLECTION knowledge_graph\nDESCRIPTION \"Regression\
+  \ test: Fixed-size chunking (25-30 pages)\"\nCHECKPOINT POLICY enabled\nSTAGES =\
+  \ [\n  STEP extract\n      EXTRACT FROM FILE \"input-doc/annual-report-2024-2025.pdf\"\
+  \n      USING READER \"AUTO\"\n      PARAMETERS (max_pages: 30),\n  \n  STEP chunk\n\
+  \      CHUNK BY fixed_size\n      PARAMETERS (chunk_size: 1000, overlap: 200)\n\
+  \      STORE AS NODE TYPE Chunk\n      LINK TO Document ON HAS_CHUNK,\n  \n  STEP\
+  \ embed\n      EMBED USING MODEL \"text-embedding-ada-002\"\n      PARAMETERS (dimensions:\
+  \ 1536, normalize: true)\n      STORE EMBEDDING IN Chunk.embedding,\n  \n  STEP\
+  \ index\n      INDEX USING {bm25: true, vector: true, graph: true}\n]"
+namespace: tcs_regression_pipeline
+expected_success: true
+expected_nodes: 50
+expected_edges: 10
+tags:
+- pipeline
+- ingestion
+- fixed_size_chunking
+- no_llm
+- embedding
+verify_persistence: true
+test_both_modes: true
+approved_by: system
+notes: 'Tests CREATE PIPELINE with fixed-size chunking.
+
+  No LLM required (faster processing).
+
+  Includes explicit embedding model.
+
+  Verifies fixed-size chunking works correctly.
+
+  '
+priority: 4
+prerequisites: []
+requires_data: false
+requires_files:
+- input-doc/annual-report-2024-2025.pdf

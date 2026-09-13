@@ -1,0 +1,31 @@
+id: test_rag_006
+name: RAG Query - Weighted Hybrid Search
+description: 'Tests RAG query - RAG automatically uses hybrid search with default
+  weights.
+
+  Uses simple RAG syntax.
+
+  '
+query: RAG "What are the main business segments?" AT NAMESPACE tcs_regression_test
+namespace: tcs_regression_test
+expected_success: true
+tags:
+- rag
+- hybrid_search
+- weighted
+- gpt-3.5
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: 'Tests simple RAG query.
+
+  RAG automatically uses hybrid search with default weights.
+
+  NOTE: Custom weights and embedding model parameters are proposed but not yet implemented.
+
+  '
+priority: 5
+prerequisites:
+- RUN_INGESTION_PIPELINE
+requires_data: true
+requires_files: []

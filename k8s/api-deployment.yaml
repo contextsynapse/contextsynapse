@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: contextsynapse-api
+  namespace: contextsynapse
+  labels:
+    app: contextsynapse
+    component: api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: contextsynapse
+      component: api
+  template:
+    metadata:
+      labels:
+        app: contextsynapse
+        component: api
+    spec:
+      containers:
+        - name: api
+          image: contextsynapse/api:latest
+          ports:
+            - containerPort: 8000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: contextsynapse-config
+            - secretRef:
+                name: contextsynapse-secrets
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "2Gi"
+              cpu: "1"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 2
+          # Local cache for graphs (ephemeral — cloud storage is source of truth)
+          volumeMounts:
+            - name: graph-cache
+              mountPath: /app/contextsynapse_data
+      volumes:
+        - name: graph-cache
+          emptyDir:
+            sizeLimit: 5Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: contextsynapse-api
+  namespace: contextsynapse
+spec:
+  selector:
+    app: contextsynapse
+    component: api
+  ports:
+    - port: 8000
+      targetPort: 8000
+      name: http
+  type: ClusterIP

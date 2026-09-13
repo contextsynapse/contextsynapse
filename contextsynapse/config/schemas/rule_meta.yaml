@@ -1,0 +1,173 @@
+# rule_meta.yaml — Rule engine schema metadata
+# Defines available fields, operators, action types, categories, severities
+# and built-in read-only rules (SEBI compliance etc.)
+# Add or modify entries here — the frontend reads this at runtime.
+
+fields:
+  - id: stock_weight
+    label: "Stock Weight (%)"
+    unit: "%"
+    description: "Maximum single stock allocation as % of portfolio"
+  - id: sector_weight
+    label: "Sector Weight (%)"
+    unit: "%"
+    description: "Maximum sector allocation as % of portfolio"
+  - id: top5_concentration
+    label: "Top 5 Concentration (%)"
+    unit: "%"
+    description: "Sum of top 5 holdings as % of portfolio"
+  - id: total_value
+    label: "Total Value (₹)"
+    unit: "₹"
+    description: "Portfolio total market value in INR"
+  - id: cash_balance_pct
+    label: "Cash Balance (%)"
+    unit: "%"
+    description: "Uninvested cash as % of portfolio"
+  - id: holding_count
+    label: "Holding Count"
+    unit: ""
+    description: "Number of individual stock positions"
+  - id: portfolio_drift
+    label: "Portfolio Drift (%)"
+    unit: "%"
+    description: "Weighted deviation from target allocation"
+
+operators:
+  - id: gt
+    label: ">"
+    description: "Greater than"
+  - id: gte
+    label: ">="
+    description: "Greater than or equal to"
+  - id: lt
+    label: "<"
+    description: "Less than"
+  - id: lte
+    label: "<="
+    description: "Less than or equal to"
+  - id: eq
+    label: "="
+    description: "Equals"
+  - id: neq
+    label: "≠"
+    description: "Not equal to"
+
+action_types:
+  - id: block
+    label: "Block"
+    icon: "ban"
+    description: "Prevent the triggering action from proceeding"
+  - id: warn
+    label: "Warn"
+    icon: "alert-triangle"
+    description: "Show a warning but allow the action"
+  - id: alert
+    label: "Alert"
+    icon: "bell"
+    description: "Raise an alert notification"
+  - id: rebalance
+    label: "Rebalance"
+    icon: "refresh-cw"
+    description: "Trigger a rebalance workflow"
+  - id: report
+    label: "Report"
+    icon: "file-text"
+    description: "Generate a compliance report"
+
+categories:
+  - id: custom
+    label: "Custom"
+  - id: compliance
+    label: "Compliance"
+  - id: risk
+    label: "Risk"
+  - id: portfolio
+    label: "Portfolio"
+
+severities:
+  - id: critical
+    label: "Critical"
+    color: "#dc2626"
+  - id: high
+    label: "High"
+    color: "#f59e0b"
+  - id: medium
+    label: "Medium"
+    color: "#3b82f6"
+  - id: low
+    label: "Low"
+    color: "#22c55e"
+  - id: info
+    label: "Info"
+    color: "#6b7280"
+
+triggers:
+  - id: on_demand
+    label: "On Demand"
+    description: "Evaluate when manually triggered"
+  - id: on_trade
+    label: "On Trade"
+    description: "Evaluate before/after each trade"
+  - id: on_schedule
+    label: "On Schedule"
+    description: "Evaluate on a recurring schedule"
+
+# Built-in read-only rules (managed here, not editable via UI)
+builtin_rules:
+  - rule_id: sebi_single_stock
+    name: "Single Stock Limit"
+    description: "SEBI PMS regulation: no single stock can exceed 10% of portfolio"
+    category: sebi
+    severity: critical
+    readonly: true
+    enabled: true
+    conditions_operator: AND
+    conditions:
+      - field: stock_weight
+        operator: gt
+        value: 10
+        unit: percent
+    actions:
+      - type: block
+        message: "SEBI violation: single stock at {max_stock_weight}% exceeds 10% limit"
+    scope: all
+    triggers: [on_demand, on_trade]
+
+  - rule_id: sebi_sector_limit
+    name: "Sector Concentration Limit"
+    description: "SEBI PMS regulation: no sector can exceed 25% of portfolio"
+    category: sebi
+    severity: critical
+    readonly: true
+    enabled: true
+    conditions_operator: AND
+    conditions:
+      - field: sector_weight
+        operator: gt
+        value: 25
+        unit: percent
+    actions:
+      - type: block
+        message: "SEBI violation: sector at {max_sector_weight}% exceeds 25% limit"
+    scope: all
+    triggers: [on_demand, on_trade]
+
+  - rule_id: sebi_top5_concentration
+    name: "Top 5 Concentration"
+    description: "Internal policy: top 5 holdings should not exceed 40% of portfolio"
+    category: sebi
+    severity: high
+    readonly: true
+    enabled: true
+    conditions_operator: AND
+    conditions:
+      - field: top5_concentration
+        operator: gt
+        value: 40
+        unit: percent
+    actions:
+      - type: warn
+        message: "Top 5 holdings at {top5_concentration}% — approaching concentration limit"
+    scope: all
+    triggers: [on_demand, on_trade]

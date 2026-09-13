@@ -1,0 +1,40 @@
+id: test_rag_004
+name: RAG - Graph Path Finding
+description: 'Tests RAG query using graph path finding.
+
+  Finds paths between query-relevant nodes.
+
+
+  Query flow:
+
+  1. Find relevant chunks
+
+  2. Find paths to related concepts
+
+  3. Include all nodes on paths
+
+  4. LLM generation with path context
+
+  '
+namespace: regression_test
+expected_success: true
+query: ''
+tags:
+- rag
+- graph_path
+- path_finding
+verify_persistence: true
+test_both_modes: true
+approved_by: system
+notes: 'Tests graph path finding for RAG.
+
+  Expands context by finding paths between concepts.
+
+  Uses explicit embedding model.
+
+  '
+priority: 5
+prerequisites:
+- RUN_INGESTION_PIPELINE
+requires_data: true
+requires_files: []

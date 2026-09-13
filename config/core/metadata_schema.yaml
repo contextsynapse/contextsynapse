@@ -1,0 +1,233 @@
+# Metadata Storage Schema Configuration
+# Schema for tracking queries, sessions, pipelines, and evaluations
+
+metadata_schema:
+  # Query tracking schema
+  queries:
+    storage_path: "metadata_store/queries"
+    partition_strategy: "daily"  # daily, weekly, monthly
+    format: "jsonl"              # jsonl, json, parquet
+    compression: 
+      enabled: true
+      days_threshold: 7           # Compress after 7 days
+      method: "gzip"             # gzip, bz2, lzma
+    retention:
+      hot: 7                      # Days to keep in hot storage
+      warm: 30                    # Days to keep in warm storage
+      cold: 90                    # Days to keep in cold storage
+      archive: 180                # Days before archiving
+    fields:
+      required:
+        - query_id
+        - session_id
+        - timestamp
+        - query_text
+        - query_type
+        - success
+      optional:
+        - execution_time_ms
+        - error_message
+        - nodes_returned
+        - edges_returned
+        - cache_hit
+        - namespace
+        - collection
+      session_context:
+        - active_namespace
+        - active_collection
+        - query_count
+        - error_count
+        - created_at
+        - last_accessed
+      performance:
+        - avg_response_time_ms
+        - min_response_time_ms
+        - max_response_time_ms
+        - total_queries
+        - error_rate
+        - cache_hit_rate
+      security:
+        - user_id
+        - role
+        - authenticated
+        - ip_address
+      monitoring:
+        - health_score
+        - alerts_count
+
+  # Session tracking schema
+  sessions:
+    storage_path: "metadata_store/sessions"
+    format: "json"
+    partition_strategy: "flat"   # flat, monthly
+    retention:
+      active: 7                   # Days to keep active sessions
+      archived: 90                # Days to keep archived sessions
+    fields:
+      identity:
+        - session_id
+        - created_at
+        - last_accessed
+        - timeout
+        - status
+      context:
+        - active_namespace
+        - active_collection
+      metrics:
+        - query_count
+        - error_count
+        - total_query_time
+        - avg_response_time
+        - min_response_time
+        - max_response_time
+      security:
+        - user_id
+        - role
+        - permissions
+        - authenticated
+        - ip_address
+      client:
+        - api_version
+        - user_agent
+        - client_version
+      monitoring:
+        - health_score
+        - alerts
+        - warnings
+
+  # Pipeline tracking schema
+  pipelines:
+    storage_path: "metadata_store/pipelines"
+    format: "json"
+    partition_strategy: "daily"
+    fields:
+      identity:
+        - pipeline_id
+        - pipeline_name
+        - pipeline_version
+        - pipeline_type
+      configuration:
+        - stages
+        - namespace
+        - collection
+        - description
+      execution:
+        - run_id
+        - started_at
+        - completed_at
+        - status
+        - total_duration
+        - stage_timings
+      performance:
+        - input_size
+        - output_size
+        - records_processed
+        - memory_peak_mb
+        - cpu_time_ms
+      checkpointing:
+        - checkpoints
+        - last_checkpoint
+      evaluation:
+        - evaluation_id
+        - metrics
+
+  # Evaluation tracking schema
+  evaluations:
+    storage_path: "metadata_store/evaluations"
+    format: "json"
+    partition_strategy: "daily"
+    fields:
+      identity:
+        - evaluation_id
+        - pipeline_id
+        - run_id
+      metrics:
+        - faithfulness
+        - relevance
+        - coherence
+        - factual_consistency
+        - overall_score
+      details:
+        - evaluated_at
+        - evaluator_model
+        - gold_standard
+        - grounded_sources
+        - hallucinations
+        - confidence
+
+  # SQLite indexing configuration
+  indexes:
+    database_path: "metadata_store/metadata_index.db"
+    tables:
+      query_index:
+        primary_key: query_id
+        indexes:
+          - [session_id, timestamp]
+          - [namespace, timestamp]
+          - [query_type, timestamp]
+          - timestamp
+      session_index:
+        primary_key: session_id
+        indexes:
+          - namespace
+          - created_at
+          - last_accessed
+      pipeline_index:
+        primary_key: [pipeline_id, run_id]
+        indexes:
+          - pipeline_id
+          - started_at
+          - status
+      evaluation_index:
+        primary_key: evaluation_id
+        indexes:
+          - pipeline_id
+          - run_id
+          - evaluated_at
+
+  # Analytics configuration
+  analytics:
+    storage_path: "metadata_store/analytics"
+    daily_summaries: true
+    weekly_summaries: true
+    monthly_summaries: true
+    aggregations:
+      - avg_response_time
+      - total_queries
+      - error_rate
+      - cache_hit_rate
+      - health_score
+      - unique_sessions
+      - unique_namespaces
+
+# Performance settings
+performance:
+  async_writes: true              # Write metadata asynchronously
+  batch_size: 100                 # Batch size for writes
+  write_timeout_ms: 5000          # Max time to wait for write
+  compression_level: 6            # Gzip compression level (1-9)
+
+# Security settings
+security:
+  mask_sensitive_data: true       # Mask queries in logs
+  encryption: false               # Encrypt archived data
+  access_control: false           # Enable access control
+
+# Monitoring settings
+monitoring:
+  enabled: true
+  alert_thresholds:
+    error_rate: 0.1               # Alert if error rate > 10%
+    avg_response_time_ms: 5000   # Alert if avg time > 5s
+    health_score: 80             # Alert if health < 80
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,35 @@
+id: test_rag_graph_dfs_eval_001
+name: RAG Graph DFS - With Evaluation Metrics
+description: 'Tests RAG query with DFS graph traversal and evaluation:
+
+  - Deep exploration of graph relationships
+
+  - Evaluation metrics for deep traversal
+
+  - Context aggregation from multiple hops
+
+
+  Uses GPT-3.5-Turbo with custom prompt and embedding model.
+
+  '
+namespace: rag_regression_test_graph
+expected_success: true
+tags:
+- rag
+- graph_search
+- dfs
+- evaluation
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: 'Tests DFS graph traversal with evaluation.
+
+  Ensures deep exploration is properly evaluated.
+
+  '
+query: ''
+priority: 5
+prerequisites:
+- RUN_INGESTION_PIPELINE
+requires_data: true
+requires_files: []

@@ -1,0 +1,90 @@
+# ============================================================================
+# AIContextDB Application Configuration
+# Application-level settings: LLMs, search, embeddings, API server
+# 
+# NOTE: Database, performance, optimization, and storage settings are in:
+#       config/core/database.yaml
+# ============================================================================
+
+# ============================================================================
+# SEARCH CONFIGURATION
+# ============================================================================
+search:
+  hybrid_enabled: true
+  semantic_weight: 0.7
+  keyword_weight: 0.3
+  graph_weight: 0.4
+  max_results: 100
+  rerank_top_k: 20
+
+# ============================================================================
+# EMBEDDING SETTINGS
+# ============================================================================
+embeddings:
+  provider: "local"  # "local" or "watsonx"
+  model: "all-MiniLM-L6-v2"
+  dimension: 384
+  batch_size: 32
+  
+  # WatsonX Configuration (if using watsonx provider)
+  watsonx:
+    api_key: ""
+    url: "https://us-south.ml.cloud.ibm.com"
+    project_id: ""
+    model_id: "sentence-transformers/all-MiniLM-L6-v2"
+
+# ============================================================================
+# LLM CONFIGURATION
+# ============================================================================
+llm:
+  provider: "openai"  # "openai", "anthropic", "watsonx"
+  model: "gpt-3.5-turbo"
+  temperature: 0.1
+  max_tokens: 1000
+  
+  # API Keys (set via environment variables)
+  openai_api_key: ""
+  anthropic_api_key: ""
+  watsonx_api_key: ""
+
+# ============================================================================
+# API SERVER SETTINGS
+# ============================================================================
+api:
+  host: "0.0.0.0"
+  port: 8000
+  debug: false
+  cors_origins: ["*"]
+  rate_limit: 100  # requests per minute
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,53 @@
+name: Global Risk Events
+description: "Geopolitical events, wars, sanctions, trade wars — black swan detection"
+type: event
+version: "1.0"
+active: true
+
+connector:
+  type: rss
+  sources:
+    - "https://feeds.finance.yahoo.com/rss/2.0/headline?s=^GSPC&region=US&lang=en-US"
+    - "https://economictimes.indiatimes.com/rssfeedsdefault.cms"
+  schedule: "0 */2 * * *"
+  poll_interval_minutes: 120
+  filter:
+    topics:
+      - geopolitical
+      - war
+      - sanctions
+      - trade war
+      - tariff
+      - crisis
+      - conflict
+      - Taiwan
+      - China
+      - Russia
+      - oil embargo
+      - OPEC
+    exclude:
+      - cricket
+      - entertainment
+
+schema:
+  node_type: GeopoliticalSignal
+  fields:
+    event_type: { type: string }
+    region: { type: string }
+    severity: { type: enum, values: [watch, elevated, high, extreme] }
+    market_impact: { type: string }
+  extraction_strategy: news_article
+
+hierarchy:
+  affects_sectors: ["Energy", "IT", "Metals", "Pharma"]
+  upstream_of: "Global Macro"
+  weight: 0.8
+  level: world
+
+decay:
+  rate: 0.05
+  profile: crisis
+
+relevance:
+  sectors: ["Energy", "IT", "Metals", "Banking"]
+  keywords: ["geopolitical", "war", "sanctions", "crisis", "oil price"]

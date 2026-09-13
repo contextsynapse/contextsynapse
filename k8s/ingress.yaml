@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: contextsynapse-ingress
+  namespace: contextsynapse
+  annotations:
+    # For nginx ingress controller
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
+    # For cert-manager (HTTPS)
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  # Uncomment for HTTPS:
+  # tls:
+  #   - hosts:
+  #       - api.yourdomain.com
+  #     secretName: contextsynapse-tls
+  rules:
+    - host: api.yourdomain.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: contextsynapse-api
+                port:
+                  number: 8000

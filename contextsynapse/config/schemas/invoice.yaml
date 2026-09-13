@@ -1,0 +1,40 @@
+# Invoice Extraction Schema
+# Used when ingesting invoices, purchase orders, receipts, and billing documents.
+
+name: invoice
+
+node_types:
+  Vendor:
+    fields: [name, address, tax_id, email, phone, bank_account]
+    required: [name]
+    description: "The vendor or seller issuing the invoice"
+
+  Buyer:
+    fields: [name, address, tax_id, email, phone, account_number]
+    required: [name]
+    description: "The buyer or customer receiving the invoice"
+
+  LineItem:
+    fields: [description, quantity, unit_price, total, unit, sku, tax_rate]
+    required: [description]
+    description: "A single line item or product/service on the invoice"
+
+edge_types:
+  SOLD_BY:
+    source: LineItem
+    target: Vendor
+  PURCHASED_BY:
+    source: LineItem
+    target: Buyer
+  BILLED_TO:
+    source: Vendor
+    target: Buyer
+
+fact_types:
+  - type: total
+    fields: [subtotal, tax, discount, grand_total, currency, due_date]
+    description: "The financial totals and payment details for the invoice"
+
+  - type: PaymentTerm
+    fields: [terms, due_date, late_fee, source_text]
+    description: "Payment terms and conditions stated on the invoice"

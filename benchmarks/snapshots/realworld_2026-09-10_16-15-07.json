@@ -1,0 +1,50 @@
+[
+  {
+    "scale": "Small",
+    "docs": 100,
+    "passages": 1000,
+    "prices": 9000,
+    "ingest_sec": 4.25,
+    "ingest_items_sec": 2897,
+    "graph_nodes": 1605,
+    "graph_edges": 1700,
+    "memory_mb": 7.5,
+    "rag_avg_ms": 21.21,
+    "rag_p50_ms": 14.58,
+    "price_avg_ms": 9.36,
+    "neighbor_avg_us": 2.8,
+    "integrity": "100/100"
+  },
+  {
+    "scale": "Medium",
+    "docs": 1000,
+    "passages": 10000,
+    "prices": 9000,
+    "ingest_sec": 4.43,
+    "ingest_items_sec": 8875,
+    "graph_nodes": 15105,
+    "graph_edges": 15200,
+    "memory_mb": 21.0,
+    "rag_avg_ms": 17.34,
+    "rag_p50_ms": 17.16,
+    "price_avg_ms": 2.38,
+    "neighbor_avg_us": 1.4,
+    "integrity": "100/100"
+  },
+  {
+    "scale": "Large",
+    "docs": 5000,
+    "passages": 50000,
+    "prices": 9000,
+    "ingest_sec": 60.44,
+    "ingest_items_sec": 2636,
+    "graph_nodes": 75105,
+    "graph_edges": 75200,
+    "memory_mb": 109.6,
+    "rag_avg_ms": 506.7,
+    "rag_p50_ms": 478.57,
+    "price_avg_ms": 8.2,
+    "neighbor_avg_us": 2.8,
+    "integrity": "100/100"
+  }
+]

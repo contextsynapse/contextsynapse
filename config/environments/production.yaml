@@ -1,0 +1,18 @@
+# ============================================================================
+# Production Environment Configuration
+# Production overrides for application settings
+# ============================================================================
+
+# Override application settings for production
+api:
+  debug: false
+  rate_limit: 1000  # Higher rate limit for production
+
+# Production-specific LLM settings
+llm:
+  model: "gpt-4"  # Use more powerful model in production
+  temperature: 0.0  # More deterministic in production
+
+# Production search settings
+search:
+  max_results: 200  # More results in production

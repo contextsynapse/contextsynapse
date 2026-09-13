@@ -1,0 +1,51 @@
+id: test_pipeline_002
+name: Pipeline - Semantic Chunking (GPT-3.5)
+description: 'Tests ingestion pipeline with semantic chunking strategy.
+
+  Uses GPT-3.5-Turbo for chunking.
+
+  Uses text-embedding-ada-002 for embeddings.
+
+  Processes 25-30 pages.
+
+  '
+query: "CREATE PIPELINE regression_semantic_pipeline\nIN NAMESPACE tcs_regression_pipeline\n\
+  SOURCE COLLECTION raw_docs\nTARGET COLLECTION knowledge_graph\nDESCRIPTION \"Regression\
+  \ test: Semantic chunking with GPT-3.5 (25-30 pages)\"\nCHECKPOINT POLICY enabled\n\
+  STAGES = [\n  STEP extract\n      EXTRACT FROM FILE \"input-doc/annual-report-2024-2025.pdf\"\
+  \n      USING READER \"AUTO\"\n      PARAMETERS (max_pages: 30),\n  \n  STEP chunk\n\
+  \      CHUNK BY semantic\n      USING MODEL \"gpt-3.5-turbo\"\n      PROMPT \"Split\
+  \ the following text into semantic chunks preserving meaning. Each chunk should\
+  \ be coherent and self-contained. Return JSON array with start, end, topic.\"\n\
+  \      PARAMETERS (max_tokens: 1000, similarity_threshold: 0.7)\n      STORE AS\
+  \ NODE TYPE Chunk\n      LINK TO Document ON HAS_CHUNK,\n  \n  STEP embed\n    \
+  \  EMBED USING MODEL \"text-embedding-ada-002\"\n      PARAMETERS (dimensions: 1536,\
+  \ normalize: true)\n      STORE EMBEDDING IN Chunk.embedding,\n  \n  STEP index\n\
+  \      INDEX USING {bm25: true, vector: true, graph: true}\n]"
+namespace: tcs_regression_pipeline
+expected_success: true
+expected_nodes: 50
+expected_edges: 10
+tags:
+- pipeline
+- ingestion
+- semantic_chunking
+- gpt-3.5
+- embedding
+verify_persistence: true
+test_both_modes: true
+approved_by: system
+notes: 'Tests CREATE PIPELINE with semantic chunking.
+
+  Includes prompt for chunking model.
+
+  Includes explicit embedding model.
+
+  Verifies semantic chunking preserves meaning.
+
+  '
+priority: 4
+prerequisites: []
+requires_data: false
+requires_files:
+- input-doc/annual-report-2024-2025.pdf

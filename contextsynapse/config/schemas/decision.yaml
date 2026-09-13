@@ -1,0 +1,72 @@
+# Decision Extraction Schema
+# Used when ingesting architecture decisions, ADRs, trade-off analyses,
+# and rationale documents into a decision context.
+
+name: decision
+
+node_types:
+  Decision:
+    fields: [title, status, date, decided_by, description, context]
+    required: [title]
+    description: "An architecture or technical decision (status: proposed, accepted, deprecated, superseded)"
+
+  ADR:
+    fields: [number, title, status, date, context, decision, consequences]
+    required: [title]
+    description: "An Architecture Decision Record"
+
+  TradeOff:
+    fields: [name, description, pros, cons, chosen_option]
+    required: [name]
+    description: "A trade-off analysis comparing alternatives"
+
+  Alternative:
+    fields: [name, description, pros, cons, rejected_reason]
+    required: [name]
+    description: "A considered alternative that was evaluated"
+
+  Criterion:
+    fields: [name, weight, description, category]
+    required: [name]
+    description: "An evaluation criterion used to compare alternatives (category: cost, performance, maintainability, security)"
+
+  Stakeholder:
+    fields: [name, role, concern, influence]
+    required: [name]
+    description: "A person or team with stake in the decision outcome"
+
+edge_types:
+  DECIDED_BY:
+    source: Decision
+    target: Stakeholder
+  SUPERSEDES:
+    source: Decision
+    target: Decision
+  CONSIDERS:
+    source: Decision
+    target: Alternative
+  EVALUATED_BY:
+    source: Alternative
+    target: Criterion
+  TRADES_OFF:
+    source: TradeOff
+    target: Alternative
+  DOCUMENTED_IN:
+    source: Decision
+    target: ADR
+  IMPACTS:
+    source: Decision
+    target: Decision
+
+fact_types:
+  - type: Assumption
+    fields: [statement, confidence, impact_if_wrong, source_text]
+    description: "An assumption underlying a decision that may need validation"
+
+  - type: Outcome
+    fields: [decision, result, measured_date, description, source_text]
+    description: "A measured outcome or consequence of a past decision"
+
+  - type: Constraint
+    fields: [statement, type, imposed_by, source_text]
+    description: "A constraint that influenced the decision (type: technical, business, regulatory)"

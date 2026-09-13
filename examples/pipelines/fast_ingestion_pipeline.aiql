@@ -1,0 +1,77 @@
+-- ============================================================================
+-- FAST DOCUMENT INGESTION PIPELINE
+-- ============================================================================
+-- A fast pipeline for quick document ingestion
+-- Extracts text, chunks, and embeds (no entity/relationship extraction)
+-- Optimized for speed over completeness
+--
+-- Usage:
+--   RUN PIPELINE fast_ingestion WITH file_path="path/to/document.pdf";
+-- ============================================================================
+
+CREATE PIPELINE fast_ingestion
+IN NAMESPACE default
+SOURCE COLLECTION raw_documents
+TARGET COLLECTION processed_documents
+DESCRIPTION "Fast document ingestion with chunking and embedding"
+
+STAGES = [
+STEP extract
+    EXTRACT FROM FILE "{file_path}"
+    USING READER "AUTO"
+    DETECT (TEXT, TABLES)
+    STORE AS NODE TYPES (Document, Table)
+    LINK (Document TO Table)
+    STORE INTERMEDIATE IN COLLECTION raw_documents,
+
+STEP chunk
+    CHUNK BY fixed
+    PARAMETERS (
+        chunk_size=500,
+        overlap=50
+    )
+    STORE AS NODE TYPE Chunk
+    LINK TO Document ON HAS_CHUNK
+    STORE INTERMEDIATE IN COLLECTION processed_documents,
+
+STEP embed
+    EMBED USING PROFILE embedv1
+    PARAMETERS (
+        model="text-embedding-3-small",
+        dimensions=1536
+    )
+    STORE EMBEDDING IN Chunk.embedding
+    STORE INTERMEDIATE IN COLLECTION processed_documents
+]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

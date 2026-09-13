@@ -1,0 +1,32 @@
+id: test_rag_003
+name: RAG Query - Vector Search
+description: 'Tests RAG query - RAG automatically includes dense search in hybrid
+  search.
+
+  Uses simple RAG syntax.
+
+  '
+query: RAG "What are the key financial metrics?" AT NAMESPACE tcs_regression_test
+namespace: tcs_regression_test
+expected_success: true
+tags:
+- rag
+- vector_search
+- dense_search
+- gpt-3.5
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: 'Tests simple RAG query.
+
+  RAG automatically includes dense search in hybrid search.
+
+  NOTE: Explicit search type and embedding model parameters are proposed but not yet
+  implemented.
+
+  '
+priority: 5
+prerequisites:
+- RUN_INGESTION_PIPELINE
+requires_data: true
+requires_files: []

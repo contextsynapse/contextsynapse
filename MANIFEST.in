@@ -1,0 +1,14 @@
+include LICENSE
+include README.md
+include CHANGELOG.md
+include pyproject.toml
+recursive-include contextsynapse *.yaml *.yml *.json *.lark *.ebnf
+recursive-include contextsynapse py.typed
+prune tests
+prune frontend
+prune scripts
+prune docs
+prune examples
+prune verticals
+prune plugins
+prune sdk

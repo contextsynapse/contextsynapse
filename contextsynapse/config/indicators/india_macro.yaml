@@ -1,0 +1,213 @@
+# India Macro Indicators — structured, quantifiable data points
+# Each indicator has a defined source, frequency, scoring rules, and weight.
+# Add new indicators by appending to this file — no code changes needed.
+
+name: India Macro
+entity: market:india_economy
+description: Core macroeconomic indicators for India
+
+# Scoring: each indicator contributes a weighted signal
+# direction: "higher_is_better" or "lower_is_better"
+# threshold: defines what's positive vs negative
+# weight: contribution to the overall macro score (must sum to ~1.0)
+
+indicators:
+
+  # ── Growth ──────────────────────────────────────────
+
+  gdp_growth:
+    name: GDP Growth Rate
+    unit: "%"
+    frequency: quarterly
+    source: MOSPI
+    source_url: https://mospi.gov.in/
+    direction: higher_is_better
+    thresholds:
+      strong: 7.0      # above = strongly positive
+      positive: 5.0     # above = positive
+      neutral: 3.0      # above = neutral
+      negative: 0.0     # below = negative
+    weight: 0.15
+    sector_impact:
+      banking: 0.8
+      it: 0.5
+      fmcg: 0.7
+      auto: 0.9
+      infra: 1.0
+
+  iip_growth:
+    name: Index of Industrial Production
+    unit: "%"
+    frequency: monthly
+    source: MOSPI
+    direction: higher_is_better
+    thresholds:
+      strong: 8.0
+      positive: 4.0
+      neutral: 0.0
+      negative: -2.0
+    weight: 0.08
+
+  pmi_manufacturing:
+    name: PMI Manufacturing
+    unit: index
+    frequency: monthly
+    source: S&P Global
+    direction: higher_is_better
+    thresholds:
+      strong: 55.0      # strong expansion
+      positive: 50.0     # expansion
+      neutral: 49.0      # borderline
+      negative: 45.0     # contraction
+    weight: 0.08
+
+  pmi_services:
+    name: PMI Services
+    unit: index
+    frequency: monthly
+    source: S&P Global
+    direction: higher_is_better
+    thresholds:
+      strong: 55.0
+      positive: 50.0
+      neutral: 49.0
+      negative: 45.0
+    weight: 0.07
+
+  core_sector_output:
+    name: Core Sector Output
+    unit: "%"
+    frequency: monthly
+    source: MOSPI
+    direction: higher_is_better
+    thresholds:
+      strong: 8.0
+      positive: 4.0
+      neutral: 0.0
+      negative: -2.0
+    weight: 0.05
+
+  # ── Inflation & Monetary Policy ─────────────────────
+
+  cpi_inflation:
+    name: CPI Inflation
+    unit: "%"
+    frequency: monthly
+    source: MOSPI
+    direction: lower_is_better
+    thresholds:
+      strong: 2.0       # very low inflation = strongly positive
+      positive: 4.0      # within RBI target band
+      neutral: 6.0       # upper band
+      negative: 8.0      # above = stagflation risk
+    weight: 0.12
+    sector_impact:
+      banking: 0.9
+      fmcg: 0.8
+      auto: 0.6
+
+  rbi_repo_rate:
+    name: RBI Repo Rate
+    unit: "%"
+    frequency: bi-monthly
+    source: RBI MPC
+    source_url: https://rbi.org.in/
+    scoring: action_based    # scored by action, not absolute value
+    actions:
+      cut: 0.8              # rate cut = positive for growth
+      hold_dovish: 0.3      # hold but dovish stance
+      hold: 0.0             # neutral
+      hold_hawkish: -0.3    # hold but hawkish
+      hike: -0.8            # rate hike = negative for growth
+    weight: 0.12
+    sector_impact:
+      banking: 1.0
+      auto: 0.8
+      real_estate: 0.9
+
+  # ── Fiscal ──────────────────────────────────────────
+
+  fiscal_deficit:
+    name: Fiscal Deficit (% of GDP)
+    unit: "%"
+    frequency: monthly
+    source: CGA
+    direction: lower_is_better
+    thresholds:
+      strong: 3.0
+      positive: 4.5
+      neutral: 5.5
+      negative: 6.5
+    weight: 0.06
+
+  gst_collection:
+    name: GST Collection
+    unit: "lakh_crore"
+    frequency: monthly
+    source: Finance Ministry
+    direction: higher_is_better
+    thresholds:
+      strong: 1.80
+      positive: 1.60
+      neutral: 1.40
+      negative: 1.20
+    weight: 0.08
+    sector_impact:
+      fmcg: 0.9
+      auto: 0.8
+
+  # ── External ────────────────────────────────────────
+
+  current_account:
+    name: Current Account Balance (% of GDP)
+    unit: "%"
+    frequency: quarterly
+    source: RBI
+    direction: higher_is_better    # surplus or small deficit is better
+    thresholds:
+      strong: 0.0       # surplus
+      positive: -1.5
+      neutral: -2.5
+      negative: -3.5
+    weight: 0.05
+
+  fdi_inflows:
+    name: FDI Inflows
+    unit: "billion_usd"
+    frequency: monthly
+    source: DPIIT
+    direction: higher_is_better
+    thresholds:
+      strong: 6.0
+      positive: 4.0
+      neutral: 2.0
+      negative: 1.0
+    weight: 0.04
+
+  forex_reserves:
+    name: Forex Reserves
+    unit: "billion_usd"
+    frequency: weekly
+    source: RBI
+    direction: higher_is_better
+    thresholds:
+      strong: 650
+      positive: 600
+      neutral: 550
+      negative: 500
+    weight: 0.04
+
+  # ── Labour ──────────────────────────────────────────
+
+  unemployment_rate:
+    name: Unemployment Rate
+    unit: "%"
+    frequency: monthly
+    source: CMIE
+    direction: lower_is_better
+    thresholds:
+      strong: 5.0
+      positive: 7.0
+      neutral: 8.0
+      negative: 10.0
+    weight: 0.06

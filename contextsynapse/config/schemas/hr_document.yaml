@@ -1,0 +1,48 @@
+# HR Document Extraction Schema
+# Used when ingesting HR policies, job descriptions, employee handbooks, and onboarding docs.
+
+name: hr_document
+
+node_types:
+  Employee:
+    fields: [name, employee_id, department, location, start_date, employment_type]
+    required: [name]
+    description: "An employee or staff member referenced in the document"
+
+  Role:
+    fields: [title, level, department, responsibilities, requirements]
+    required: [title]
+    description: "A job role or position defined in the document"
+
+  Policy:
+    fields: [name, category, description, effective_date, version]
+    required: [name]
+    description: "An HR policy, rule, or guideline"
+
+  Benefit:
+    fields: [name, type, description, eligibility, value]
+    required: [name]
+    description: "An employee benefit, perk, or compensation item"
+
+edge_types:
+  HOLDS_ROLE:
+    source: Employee
+    target: Role
+  GOVERNED_BY:
+    source: Employee
+    target: Policy
+  ELIGIBLE_FOR:
+    source: Employee
+    target: Benefit
+  REPORTS_TO:
+    source: Role
+    target: Role
+
+fact_types:
+  - type: Requirement
+    fields: [statement, category, source_text]
+    description: "A stated requirement or expectation from the HR document"
+
+  - type: Entitlement
+    fields: [description, amount, unit, conditions, source_text]
+    description: "A specific employee entitlement such as leave days or allowances"

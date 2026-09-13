@@ -1,0 +1,54 @@
+-- ============================================================================
+-- TCS FULL REPORT PIPELINE
+-- ============================================================================
+-- Complete pipeline for processing the full TCS Annual Report
+-- Includes: Extraction, Chunking, Embedding, Entity Extraction
+-- Supports resumability from embedding stage if it fails
+--
+-- Usage:
+--   RUN PIPELINE tcs_full_report PARAMETERS (file_path="input-doc/OTC_TCS_2024.pdf");
+-- ============================================================================
+
+CREATE PIPELINE tcs_full_report
+IN NAMESPACE tcs_full_report
+SOURCE COLLECTION raw_documents
+TARGET COLLECTION knowledge_graph
+DESCRIPTION "Complete TCS Annual Report processing with chunking and embeddings"
+
+STAGES = [
+STEP extract
+    EXTRACT FROM FILE "{file_path}"
+    MODE FULL
+    USING READER "AUTO"
+    DETECT (TEXT, TABLES, IMAGES)
+    PARSE_METADATA TRUE
+    STORE AS NODE TYPES (Document, Table, Image)
+    LINK (Document TO Table, Document TO Image)
+    STORE INTERMEDIATE IN COLLECTION raw_documents,
+
+STEP connect
+    CONNECT FROM NORMALIZED
+    CREATE NODES (Document, Table, Image)
+    LINK (Document TO Table, Document TO Image)
+    STORE INTERMEDIATE IN COLLECTION raw_documents,
+
+STEP chunk
+    CHUNK BY fixed
+    PARAMETERS (chunk_size: 1000, overlap: 200)
+    STORE AS NODE TYPE Chunk
+    LINK TO Document ON HAS_CHUNK
+    STORE INTERMEDIATE IN COLLECTION knowledge_graph,
+
+STEP embed
+    EMBED USING PROFILE embedv1
+    STORE EMBEDDING IN Chunk.embedding
+    STORE INTERMEDIATE IN COLLECTION knowledge_graph,
+
+STEP extract_entities
+    EXTRACT ENTITIES
+    USING LLM "gpt-4"
+    PROMPT "Extract all named entities from the text. Identify and categorize entities such as: Organizations, People, Locations, Products, Dates, Financial figures, Technologies, Concepts, and Events."
+    STORE AS NODE TYPE Entity
+    LINK TO Chunk ON MENTIONS
+    STORE INTERMEDIATE IN COLLECTION knowledge_graph
+]

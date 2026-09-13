@@ -1,0 +1,60 @@
+batch_size: 100
+chunking_config: {}
+chunking_params: {}
+chunking_strategy: content_aware
+created_at: '2025-10-24T11:52:10.187447'
+description: Comprehensive multimedia content analysis with enhanced extraction capabilities
+embedding_model: openai
+embedding_params: {}
+evaluation_config: {}
+evaluation_metrics:
+- relevance
+- diversity
+- coherence
+extraction_config: {}
+extraction_params: {}
+extraction_types:
+- audio_transcript
+- video_frames
+- image_explanation
+- object_detection
+- scene_analysis
+file_type_detection: true
+graph_namespace: enhanced_multimedia_content
+graph_schema: {}
+max_workers: 4
+name: Enhanced Multimedia Content Analysis
+parallel_processing: true
+pipeline_id: 17c9a4d5-8b20-4182-bb40-850bad3f4bcb
+quality_thresholds: {}
+reader_params: {}
+reader_strategies:
+  audio: audio_reader
+  image: image_reader
+  video: video_reader
+relationship_config: {}
+reproducibility_seed: null
+retrieval_config: {}
+retrieval_methods:
+- multimodal_retrieval
+- semantic_search
+save_evaluation: true
+save_intermediates: true
+save_pipeline: true
+save_retrieval_metrics: true
+sources:
+- file_types:
+  - mp4
+  - mp3
+  - jpg
+  - png
+  path: multimedia/
+  type: folder
+supported_file_types:
+- video
+- audio
+- image
+updated_at: '2025-10-24T11:52:10.187447'
+validation_config: {}
+validation_rules: []
+version: 2.0.0

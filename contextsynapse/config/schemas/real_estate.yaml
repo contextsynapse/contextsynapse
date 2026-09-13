@@ -1,0 +1,49 @@
+# Real Estate Extraction Schema
+# Used when ingesting property listings, MLS data, real estate reports, and appraisals.
+
+name: real_estate
+
+node_types:
+  Property:
+    fields: [address, city, state, zip_code, country, type, bedrooms, bathrooms,
+             square_footage, lot_size, year_built, description, status]
+    required: [address]
+    description: "A real estate property or listing"
+
+  Price:
+    fields: [amount, currency, type, date, price_per_sqft, change_percent]
+    required: [amount]
+    description: "A price point for a property (listing, sale, appraisal, rental)"
+
+  Agent:
+    fields: [name, license_number, agency, phone, email, specialization]
+    required: [name]
+    description: "A real estate agent or broker"
+
+  Amenity:
+    fields: [name, type, description, distance, rating]
+    required: [name]
+    description: "A nearby amenity or property feature (school, park, gym, pool)"
+
+edge_types:
+  LISTED_BY:
+    source: Property
+    target: Agent
+  PRICED_AT:
+    source: Property
+    target: Price
+  HAS_AMENITY:
+    source: Property
+    target: Amenity
+  COMPARABLE_TO:
+    source: Property
+    target: Property
+
+fact_types:
+  - type: MarketTrend
+    fields: [description, area, metric, value, unit, period, source_text]
+    description: "A real estate market trend or statistic for a location"
+
+  - type: PropertyFact
+    fields: [attribute, value, unit, source_text]
+    description: "A specific factual attribute of the property"

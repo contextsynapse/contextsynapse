@@ -1,0 +1,35 @@
+id: test_blockchain_005
+name: Blockchain - Verify Specific Block
+description: 'Tests VERIFY BLOCK query to verify integrity of a specific block.
+
+  Requires traceability to be enabled.
+
+  '
+query: 'CREATE NODE TestNode { name: "test_node_1" };
+
+  CREATE NODE TestNode { name: "test_node_2" };
+
+
+  VERIFY BLOCK 1'
+namespace: blockchain_test
+expected_success: true
+tags:
+- blockchain
+- traceability
+- verify_block
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: 'Tests VERIFY BLOCK query with specific block index.
+
+  Requires traceability to be enabled.
+
+  Should verify block integrity.
+
+  '
+skip: true
+skip_reason: Traceability layer not enabled in default configuration
+priority: 6
+prerequisites: []
+requires_data: false
+requires_files: []

@@ -1,0 +1,41 @@
+id: test_rag_002
+name: RAG Graph Search - DFS Traversal
+description: 'Tests RAG query with DFS graph traversal for deep context exploration.
+
+  Explores deeper relationships in the graph.
+
+
+  Strategy:
+
+  1. Hybrid search to find initial chunks
+
+  2. DFS traversal for deep exploration
+
+  3. Follow paths deeper into graph structure
+
+  4. Generate answer with deep context
+
+  '
+namespace: rag_regression_test_graph
+expected_success: true
+query: ''
+expected_nodes: 4
+expected_edges: 5
+tags:
+- rag
+- graph_search
+- dfs
+- traversal
+verify_persistence: true
+test_both_modes: true
+approved_by: system
+notes: 'Tests DFS graph traversal for deep RAG context exploration.
+
+  Ensures embedding model is specified for dense search.
+
+  '
+priority: 5
+prerequisites:
+- RUN_INGESTION_PIPELINE
+requires_data: true
+requires_files: []

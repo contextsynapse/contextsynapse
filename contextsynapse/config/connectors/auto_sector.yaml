@@ -1,0 +1,20 @@
+name: auto_sector
+connector_type: stock_price
+target_context_id: sector_auto
+poll_interval_minutes: 5
+active: true
+config:
+  exchange: NSE
+  period: "1d"
+  interval: "1d"
+  symbols:
+    - "MARUTI.NS"
+    - "TATAMOTORS.NS"
+    - "BAJAJ_AUTO.NS"
+    - "M_M.NS"
+    - "HEROMOTOCO.NS"
+    - "EICHERMOT.NS"
+    - "ASHOKLEY.NS"
+    - "TVSMOTOR.NS"
+    - "BALKRISIND.NS"
+    - "MRF.NS"

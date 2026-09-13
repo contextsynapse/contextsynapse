@@ -1,0 +1,51 @@
+# Architecture Document Extraction Schema
+# Used when ingesting system design docs, ADRs, infrastructure diagrams, and runbooks.
+
+name: architecture_doc
+
+node_types:
+  Component:
+    fields: [name, type, language, team, version, description]
+    required: [name]
+    description: "A software component, module, or library"
+
+  Service:
+    fields: [name, type, protocol, port, host, description, sla]
+    required: [name]
+    description: "A running service, microservice, or API"
+
+  Database:
+    fields: [name, type, engine, version, host, description]
+    required: [name]
+    description: "A database or persistent storage system"
+
+  Deployment:
+    fields: [name, environment, platform, region, replicas, description]
+    required: [name]
+    description: "A deployment target or environment (prod, staging, cloud region)"
+
+edge_types:
+  DEPENDS_ON:
+    source: Component
+    target: Component
+  CONNECTS_TO:
+    source: Service
+    target: Service
+  DEPLOYED_ON:
+    source: Service
+    target: Deployment
+  READS_FROM:
+    source: Service
+    target: Database
+  WRITES_TO:
+    source: Service
+    target: Database
+
+fact_types:
+  - type: DesignDecision
+    fields: [title, rationale, alternatives, consequences, source_text]
+    description: "An architectural decision or design choice documented"
+
+  - type: NonFunctionalRequirement
+    fields: [name, category, value, unit, source_text]
+    description: "A non-functional requirement such as latency, throughput, or availability"

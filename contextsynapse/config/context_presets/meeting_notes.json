@@ -1,0 +1,21 @@
+{
+  "name": "Engineering Meeting Notes",
+  "description": "Internal engineering team meeting notes and decisions",
+  "context_type": "knowledge_base",
+  "sensitivity": "confidential",
+  "tags": ["internal", "engineering"],
+  "pipeline": {
+    "template_id": "builtin:knowledge-graph",
+    "source_url": "",
+    "max_pages": 0,
+    "schema_id": "meeting_notes",
+    "schema_mode": "schema_plus"
+  },
+  "filters": {
+    "keyword_exclude": [],
+    "keyword_include": [],
+    "semantic_rules": [],
+    "semantic_mode": "or"
+  },
+  "schedule": {"trigger_type": "manual", "interval_minutes": 0}
+}

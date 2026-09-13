@@ -1,0 +1,39 @@
+id: test_blockchain_009
+name: Blockchain - Get Blocks Range
+description: 'Tests GET BLOCKS FROM X TO Y query to get blocks in a range.
+
+  Requires traceability to be enabled.
+
+  '
+query: 'CREATE NODE TestNode { name: "test_node_1" };
+
+  CREATE NODE TestNode { name: "test_node_2" };
+
+  CREATE NODE TestNode { name: "test_node_3" };
+
+  CREATE NODE TestNode { name: "test_node_4" };
+
+
+  GET BLOCKS FROM 0 TO 3'
+namespace: blockchain_test
+expected_success: true
+tags:
+- blockchain
+- traceability
+- blocks_range
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: 'Tests GET BLOCKS FROM X TO Y query.
+
+  Requires traceability to be enabled.
+
+  Should return blocks in specified range.
+
+  '
+skip: true
+skip_reason: Traceability layer not enabled in default configuration
+priority: 6
+prerequisites: []
+requires_data: false
+requires_files: []

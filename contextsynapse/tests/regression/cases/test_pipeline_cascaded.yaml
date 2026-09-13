@@ -1,0 +1,61 @@
+id: test_pipeline_012
+name: Pipeline - Cascaded Pipeline Execution
+description: 'Tests cascaded pipeline where one pipeline depends on another.
+
+  First pipeline extracts and chunks documents.
+
+  Second pipeline processes chunks with entity extraction and embedding.
+
+  Uses GPT-3.5-Turbo for chunking and entity extraction.
+
+  Uses text-embedding-ada-002 for embeddings.
+
+  '
+query: "-- First pipeline: Extract and chunk\nCREATE PIPELINE extract_and_chunk_pipeline\n\
+  IN NAMESPACE cascaded_pipeline_test\nSOURCE COLLECTION raw_docs\nTARGET COLLECTION\
+  \ chunked_docs\nDESCRIPTION \"First pipeline: Extract and chunk documents\"\nCHECKPOINT\
+  \ POLICY enabled\nSTAGES = [\n  STEP extract\n      EXTRACT FROM FILE \"input-doc/annual-report-2024-2025.pdf\"\
+  \n      USING READER \"AUTO\"\n      PARAMETERS (max_pages: 10),\n  \n  STEP chunk\n\
+  \      CHUNK BY semantic\n      USING MODEL \"gpt-3.5-turbo\"\n      PROMPT \"Split\
+  \ text into semantic chunks preserving meaning.\"\n      PARAMETERS (max_tokens:\
+  \ 1000, overlap: 100)\n      STORE AS NODE TYPE Chunk\n      LINK TO Document ON\
+  \ HAS_CHUNK\n];\n\n-- Second pipeline: Process chunks (depends on first pipeline)\n\
+  CREATE PIPELINE process_chunks_pipeline\nIN NAMESPACE cascaded_pipeline_test\nSOURCE\
+  \ COLLECTION chunked_docs\nTARGET COLLECTION knowledge_graph\nDESCRIPTION \"Second\
+  \ pipeline: Process chunks with entities and embeddings\"\nCHECKPOINT POLICY enabled\n\
+  STAGES = [\n  STEP extract_entities\n      EXTRACT ENTITIES FROM CHUNKS\n      USING\
+  \ LLM \"gpt-3.5-turbo\"\n      PROMPT \"Extract entities: ORGANIZATION, PERSON,\
+  \ LOCATION, FINANCIAL_METRIC.\"\n      STORE AS NODE TYPE Entity\n      LINK TO\
+  \ Chunk ON MENTIONS,\n  \n  STEP embed\n      EMBED USING MODEL \"text-embedding-ada-002\"\
+  \n      PARAMETERS (dimensions: 1536, normalize: true)\n      STORE EMBEDDING IN\
+  \ Chunk.embedding,\n  \n  STEP index\n      INDEX USING {bm25: true, vector: true,\
+  \ graph: true}\n];\n\n-- Run first pipeline\nRUN PIPELINE extract_and_chunk_pipeline;\n\
+  \n-- Run second pipeline (depends on first)\nRUN PIPELINE process_chunks_pipeline"
+namespace: cascaded_pipeline_test
+expected_success: true
+expected_nodes: 50
+expected_edges: 20
+tags:
+- pipeline
+- cascaded
+- nested
+- ingestion
+- gpt-3.5
+- embedding
+verify_persistence: true
+test_both_modes: true
+approved_by: system
+notes: 'Tests cascaded pipeline execution.
+
+  First pipeline extracts and chunks documents.
+
+  Second pipeline processes chunks with entity extraction and embedding.
+
+  Verifies pipeline dependencies work correctly.
+
+  '
+priority: 4
+prerequisites: []
+requires_data: false
+requires_files:
+- input-doc/annual-report-2024-2025.pdf

@@ -1,0 +1,35 @@
+id: test_rag_graph_multi_hop_eval_001
+name: RAG Graph Multi-Hop - With Evaluation Metrics
+description: 'Tests RAG query with multi-hop graph traversal:
+
+  - Multiple relationship hops (2-3 hops)
+
+  - Context aggregation from multiple layers
+
+  - Evaluation of multi-hop effectiveness
+
+
+  Uses GPT-3.5-Turbo with custom prompt and embedding model.
+
+  '
+namespace: rag_regression_test_graph
+expected_success: true
+tags:
+- rag
+- graph_search
+- multi_hop
+- evaluation
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: 'Tests multi-hop graph traversal with evaluation.
+
+  Measures effectiveness of multi-layer context aggregation.
+
+  '
+query: ''
+priority: 5
+prerequisites:
+- RUN_INGESTION_PIPELINE
+requires_data: true
+requires_files: []

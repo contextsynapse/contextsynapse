@@ -1,0 +1,105 @@
+# Context Graph Schema
+# ====================
+# Defines the category nodes created under every Context root,
+# and the allowed child node types + edge labels for each category.
+#
+# Edit this file to customize the graph structure for your use case.
+# You can also upload a per-context schema override via the API.
+
+categories:
+  knowledge:
+    label: KnowledgeBase
+    edge: HAS_KNOWLEDGE_BASE
+    description: Documents, facts, and extracted knowledge
+    children:
+      - Document
+      - TextChunk
+      - Chunk
+      - Passage
+      - Entity
+      - Fact
+      - Table
+      - Image
+
+  code:
+    label: CodeBase
+    edge: HAS_CODE_BASE
+    description: Source code, specs, tasks, and development artifacts
+    children:
+      - ProjectSpec
+      - Module
+      - Function
+      - Class
+      - Task
+      - Review
+      - Connector
+
+  system:
+    label: SystemStore
+    edge: HAS_SYSTEM_STORE
+    description: System configuration, logs, and metrics
+    children:
+      - Config
+      - Log
+      - Metric
+      - PipelineRun
+
+  user:
+    label: UserStore
+    edge: HAS_USER_STORE
+    description: User messages, conversations, and preferences
+    children:
+      - Turn
+      - Decision
+      - Question
+      - Action
+      - AgentPresence
+
+  web:
+    label: WebStore
+    edge: HAS_WEB_STORE
+    description: Web-scraped content and URL-sourced data
+    children:
+      - WebPage
+      - Document
+      - TextChunk
+      - Entity
+
+  generated:
+    label: GeneratedStore
+    edge: HAS_GENERATED_STORE
+    description: AI-generated content, summaries, and responses
+    children:
+      - Summary
+      - Response
+      - Embedding
+      - Topic
+
+  memory:
+    label: MemoryStore
+    edge: HAS_MEMORY_STORE
+    description: Long-term agent memory — learned patterns, preferences, corrections
+    children:
+      - Preference
+      - Pattern
+      - Correction
+      - Insight
+
+  artifacts:
+    label: ArtifactStore
+    edge: HAS_ARTIFACT_STORE
+    description: Generated artifacts — code files, reports, images, exports
+    children:
+      - CodeFile
+      - Report
+      - Export
+      - Diagram
+
+  tools:
+    label: ToolStore
+    edge: HAS_TOOL_STORE
+    description: Tool execution history — calls, results, errors
+    children:
+      - ToolCall
+      - ToolResult
+      - ToolError

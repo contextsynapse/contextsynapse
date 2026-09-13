@@ -1,0 +1,375 @@
+# ============================================================================
+# Ray Configuration for AIContextDB
+# Distributed computing framework configuration for scaling across clusters
+# ============================================================================
+
+ray:
+  # Enable/disable Ray integration
+  enabled: true
+  
+  # Ray cluster connection
+  cluster:
+    # Auto-detect local Ray or connect to cluster
+    # Options: "auto" (local), "ray://head-node:10001" (remote), "ray://localhost:10001" (local cluster)
+    address: "auto"
+    
+    # Cluster discovery
+    auto_discover: true
+    namespace: "contextsynapse"  # Ray namespace for resource isolation
+    
+    # Connection timeout
+    connect_timeout: 30.0
+    retry_attempts: 3
+    
+  # Resource allocation
+  resources:
+    # Default resources per worker
+    num_cpus: 1
+    num_gpus: 0
+    
+    # Specialized resource labels for different operations
+    embedding_gpu: 1      # GPUs for embedding generation
+    ocr_cpu: 2            # CPUs for OCR operations
+    graph_analytics_cpu: 4  # CPUs for graph analytics
+    vector_search_cpu: 2    # CPUs for vector search
+    
+    # Memory allocation (per worker)
+    memory_mb: 4096
+    
+    # Object store memory (shared across workers)
+    object_store_memory_mb: 2048
+    
+  # Worker configuration
+  workers:
+    # Number of workers for different operation types
+    pipeline_workers: 4
+    embedding_workers: 2
+    graph_analytics_workers: 4
+    vector_search_workers: 2
+    index_building_workers: 2
+    query_execution_workers: 4
+    
+    # Auto-scaling
+    min_workers: 1
+    max_workers: 100
+    target_utilization: 0.7  # Scale up when utilization > 70%
+    
+    # Worker lifecycle
+    idle_timeout: 300  # Kill idle workers after 5 minutes
+    worker_timeout: 3600  # Max worker lifetime (1 hour)
+    
+  # Execution modes
+  execution:
+    # Default execution mode
+    # Options: "local" (single machine), "cluster" (distributed), "auto" (detect)
+    mode: "auto"
+    
+    # Parallelization strategy
+    # Options: "aggressive" (max parallel), "balanced" (resource-aware), "conservative" (min parallel)
+    parallelization_strategy: "balanced"
+    
+    # Fault tolerance
+    fault_tolerance:
+      enabled: true
+      max_retries: 3
+      retry_delay: 5.0
+      exponential_backoff: true
+      max_retry_delay: 60.0
+      
+    # Checkpointing
+    checkpointing:
+      enabled: true
+      checkpoint_dir: "contextsynapse_data/ray_checkpoints"
+      checkpoint_interval: 100  # Checkpoint every N operations
+      max_checkpoints: 10  # Keep last N checkpoints
+      
+  # Pipeline execution
+  pipeline:
+    # Stage execution
+    stage_execution:
+      # Execute independent stages in parallel
+      parallel_stages: true
+      
+      # Max parallel stages
+      max_parallel_stages: 10
+      
+      # Stage timeout (seconds)
+      stage_timeout: 300
+      
+    # Resource allocation per stage type
+    stage_resources:
+      EXTRACT:
+        num_cpus: 1
+        num_gpus: 0
+        memory_mb: 1024
+        
+      PREPROCESS:
+        num_cpus: 1
+        num_gpus: 0
+        memory_mb: 512
+        
+      CHUNK:
+        num_cpus: 2
+        num_gpus: 0
+        memory_mb: 2048
+        
+      EMBED:
+        num_cpus: 1
+        num_gpus: 1  # GPU-accelerated embeddings
+        memory_mb: 4096
+        
+      ENTITY_EXTRACT:
+        num_cpus: 2
+        num_gpus: 0
+        memory_mb: 2048
+        
+      EXTRACT_RELATIONSHIPS:
+        num_cpus: 2
+        num_gpus: 0
+        memory_mb: 2048
+        
+      INDEX:
+        num_cpus: 2
+        num_gpus: 0
+        memory_mb: 4096
+        
+      CONNECT:
+        num_cpus: 1
+        num_gpus: 0
+        memory_mb: 1024
+        
+  # Graph analytics
+  graph_analytics:
+    # PageRank configuration
+    pagerank:
+      num_workers: 4
+      num_cpus_per_worker: 2
+      max_iterations: 100
+      tolerance: 1e-6
+      
+    # Shortest path
+    shortest_path:
+      num_workers: 2
+      num_cpus_per_worker: 1
+      parallel_paths: true
+      
+    # Community detection
+    community_detection:
+      num_workers: 4
+      num_cpus_per_worker: 2
+      algorithm: "louvain"  # Options: "louvain", "leiden", "modularity"
+      
+    # Graph traversal
+    traversal:
+      num_workers: 2
+      num_cpus_per_worker: 1
+      max_depth: 10
+      
+  # Vector search
+  vector_search:
+    # Distributed search
+    distributed: true
+    
+    # Number of search workers
+    num_workers: 4
+    
+    # GPU acceleration
+    use_gpu: true
+    gpu_per_worker: 0.5  # Share GPU across workers
+    
+    # Batch size for parallel search
+    batch_size: 1000
+    
+    # Search timeout
+    timeout: 30.0
+    
+  # Index building
+  index_building:
+    # Distributed index construction
+    distributed: true
+    
+    # Number of workers
+    num_workers: 4
+    
+    # GPU acceleration for vector indexes
+    use_gpu: true
+    
+    # Chunk size for parallel processing
+    chunk_size: 10000
+    
+    # Index building timeout
+    timeout: 600.0
+    
+  # Query execution
+  query_execution:
+    # Parallel query execution
+    parallel: true
+    
+    # Max parallel queries
+    max_parallel_queries: 10
+    
+    # Query timeout
+    timeout: 60.0
+    
+    # Batch query processing
+    batch_processing:
+      enabled: true
+      batch_size: 100
+      batch_timeout: 5.0
+      
+  # Batch operations
+  batch_operations:
+    # Bulk node/edge operations
+    bulk_operations:
+      enabled: true
+      batch_size: 10000
+      num_workers: 4
+      
+    # Parallel processing
+    parallel: true
+    
+  # Monitoring and observability
+  monitoring:
+    # Enable Ray dashboard
+    dashboard_enabled: true
+    dashboard_port: 8265
+    dashboard_host: "0.0.0.0"
+    
+    # Metrics collection
+    metrics:
+      enabled: true
+      collection_interval: 5.0  # seconds
+      
+    # Logging
+    logging:
+      level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+      log_to_file: true
+      log_file: "logs/ray.log"
+      
+  # Performance tuning
+  performance:
+    # Object store configuration
+    object_store:
+      # Memory-mapped files for object store
+      use_memory_mapped_files: true
+      
+      # Object store size (auto-detect if not set)
+      size_mb: null
+      
+    # Task scheduling
+    scheduling:
+      # Task placement strategy
+      # Options: "SPREAD" (spread across nodes), "PACK" (pack on nodes), "STRICT_PACK" (strict packing)
+      placement_strategy: "SPREAD"
+      
+      # Task retry on failure
+      retry_on_failure: true
+      
+    # Data locality
+    data_locality:
+      # Prefer scheduling tasks on nodes with data
+      prefer_local: true
+      
+      # Replicate data for better locality
+      replication_factor: 2
+      
+  # Security
+  security:
+    # TLS/SSL for cluster communication
+    tls:
+      enabled: false
+      cert_file: null
+      key_file: null
+      ca_file: null
+      
+    # Authentication
+    authentication:
+      enabled: false
+      token: null
+      
+  # Development/Testing
+  development:
+    # Local mode (single process, no cluster)
+    local_mode: false
+    
+    # NumPy serialization (for debugging)
+    numpy_serialization: "auto"  # Options: "auto", "pickle", "arrow"
+    
+    # Ignore errors (for testing)
+    ignore_errors: false
+    
+  # Advanced settings
+  advanced:
+    # Ray runtime environment
+    runtime_env:
+      # Python version
+      python_version: null  # Auto-detect
+      
+      # Working directory
+      working_dir: null
+      
+      # Environment variables
+      env_vars: {}
+      
+      # Pip packages (if needed)
+      pip: []
+      
+    # Ray object store
+    object_store_config:
+      # Maximum object size (bytes)
+      max_object_size: 100000000  # 100MB
+      
+    # Ray plasma store
+    plasma_store:
+      # Memory limit (bytes)
+      memory_limit: null  # Auto-detect
+      
+# ============================================================================
+# Cluster-specific configurations
+# ============================================================================
+
+# Example: Small cluster (4 nodes)
+cluster_small:
+  ray:
+    workers:
+      max_workers: 16
+    resources:
+      num_cpus: 4
+      num_gpus: 0
+
+# Example: Medium cluster (10 nodes)
+cluster_medium:
+  ray:
+    workers:
+      max_workers: 40
+    resources:
+      num_cpus: 4
+      num_gpus: 1
+
+# Example: Large cluster (50+ nodes)
+cluster_large:
+  ray:
+    workers:
+      max_workers: 200
+    resources:
+      num_cpus: 8
+      num_gpus: 2
+    execution:
+      parallelization_strategy: "aggressive"
+
+# Example: GPU cluster
+cluster_gpu:
+  ray:
+    workers:
+      max_workers: 100
+    resources:
+      num_cpus: 4
+      num_gpus: 4
+    pipeline:
+      stage_resources:
+        EMBED:
+          num_gpus: 1
+    vector_search:
+      use_gpu: true
+      gpu_per_worker: 1.0
+

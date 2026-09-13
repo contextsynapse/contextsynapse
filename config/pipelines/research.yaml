@@ -1,0 +1,29 @@
+batch_size: 100
+chunking_params: {}
+chunking_strategy: llm_topic_aware
+created_at: '2025-10-24T11:38:17.122098'
+description: Academic research paper analysis pipeline
+embedding_model: openai
+embedding_params: {}
+extraction_params: {}
+extraction_types:
+- entities
+- tables
+graph_namespace: research_papers
+graph_schema: {}
+max_workers: 4
+name: Research Paper Analysis
+parallel_processing: true
+pipeline_id: 8ba1b0ae-8dee-4b8a-a608-17c971bd2f83
+quality_thresholds: {}
+reproducibility_seed: null
+save_intermediates: true
+save_pipeline: true
+sources:
+- file_types:
+  - pdf
+  path: papers/
+  type: folder
+updated_at: '2025-10-24T11:38:17.122098'
+validation_rules: []
+version: 1.0.0

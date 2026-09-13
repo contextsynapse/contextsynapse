@@ -1,0 +1,20 @@
+name: energy_sector
+connector_type: stock_price
+target_context_id: sector_energy
+poll_interval_minutes: 5
+active: true
+config:
+  exchange: NSE
+  period: "1d"
+  interval: "1d"
+  symbols:
+    - "RELIANCE.NS"
+    - "ONGC.NS"
+    - "NTPC.NS"
+    - "POWERGRID.NS"
+    - "BPCL.NS"
+    - "IOC.NS"
+    - "GAIL.NS"
+    - "ADANIENT.NS"
+    - "ADANIGREEN.NS"
+    - "TATAPOWER.NS"

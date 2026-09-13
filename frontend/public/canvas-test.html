@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Click Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        canvas {
+            border: 2px solid #333;
+            background-color: white;
+            cursor: crosshair;
+        }
+        .controls {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            margin: 5px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .debug-output {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .node-info {
+            margin: 10px 0;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Canvas Click Detection Test</h1>
+        
+        <div class="controls">
+            <button onclick="resetNodes()">Reset Nodes</button>
+            <button onclick="centerNodes()">Center Nodes</button>
+            <button onclick="clearDebug()">Clear Debug</button>
+            <button onclick="togglePanZoom()">Toggle Pan/Zoom</button>
+            <span id="status">Pan/Zoom: Enabled</span>
+        </div>
+
+        <canvas id="testCanvas" width="800" height="600"></canvas>
+        
+        <div class="node-info">
+            <h3>Node Positions (Graph Space)</h3>
+            <div id="nodeInfo">Click "Reset Nodes" to show positions</div>
+        </div>
+        
+        <div class="debug-output" id="debugOutput">
+Click on the canvas to test coordinate transformation...
+        </div>
+    </div>
+
+    <script>
+        // Test data - simple nodes with known positions
+        let testNodes = [
+            { id: 'node1', x: 200, y: 200, label: 'Person', color: '#45b7d1' },
+            { id: 'node2', x: 400, y: 300, label: 'Company', color: '#4ecdc4' },
+            { id: 'node3', x: 600, y: 150, label: 'Product', color: '#96ceb4' }
+        ];
+        
+        let pan = { x: 0, y: 0 };
+        let zoom = 1;
+        let enablePanZoom = true;
+        
+        const canvas = document.getElementById('testCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        function updateNodeInfo() {
+            const container = document.getElementById('nodeInfo');
+            container.innerHTML = testNodes.map(node => 
+                `<div><strong>${node.id}</strong>: x=${node.x}, y=${node.y} (${node.label})</div>`
+            ).join('');
+        }
+        
+        function addDebug(message) {
+            const debugOutput = document.getElementById('debugOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            debugOutput.textContent += new Date().toLocaleTimeString() + ': ' + message + '\n';
+            debugOutput.scrollTop = debugOutput.scrollHeight;
+        }
+        
+        function clearDebug() {
+            document.getElementById('debugOutput').textContent = '';
+        }
+        
+        function resetNodes() {
+            testNodes = [
+                { id: 'node1', x: 200, y: 200, label: 'Person', color: '#45b7d1' },
+                { id: 'node2', x: 400, y: 300, label: 'Company', color: '#4ecdc4' },
+                { id: 'node3', x: 600, y: 150, label: 'Product', color: '#96ceb4' }
+            ];
+            pan = { x: 0, y: 0 };
+            zoom = 1;
+            enablePanZoom = true;
+            updateNodeInfo();
+            drawCanvas();
+            addDebug('Nodes reset to default positions');
+        }
+        
+        function centerNodes() {
+            // Center nodes in the canvas
+            testNodes.forEach(node => {
+                node.x = canvas.width / 2 + (Math.random() - 0.5) * 100;
+                node.y = canvas.height / 2 + (Math.random() - 0.5) * 100;
+            });
+            pan = { x: 0, y: 0 };
+            zoom = 1;
+            updateNodeInfo();
+            drawCanvas();
+            addDebug('Nodes centered');
+        }
+        
+        function togglePanZoom() {
+            enablePanZoom = !enablePanZoom;
+            document.getElementById('status').textContent = `Pan/Zoom: ${enablePanZoom ? 'Enabled' : 'Disabled'}`;
+            addDebug(`Pan/Zoom ${enablePanZoom ? 'enabled' : 'disabled'}`);
+        }
+        
+        function drawCanvas() {
+            // Clear canvas
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Apply pan and zoom
+            ctx.save();
+            ctx.translate(pan.x, pan.y);
+            ctx.scale(zoom, zoom);
+            
+            // Draw nodes
+            testNodes.forEach(node => {
+                // Draw node circle
+                ctx.fillStyle = node.color;
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, 20, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                // Draw node outline
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Draw node label
+                ctx.fillStyle = '#333';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(node.label, node.x, node.y - 30);
+                
+                // Debug: Show original position
+                ctx.fillStyle = '#ff0000';
+                ctx.font = '10px Arial';
+                ctx.fillText(`${node.id}: ${node.x},${node.y}`, node.x - 20, node.y + 35);
+            });
+            
+            // Draw grid
+            if (enablePanZoom) {
+                ctx.strokeStyle = '#dddddd';
+                ctx.lineWidth = 1;
+                for (let x = 0; x <= canvas.width; x += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, canvas.height);
+                    ctx.stroke();
+                }
+                for (let y = 0; y <= canvas.height; y += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(canvas.width, y);
+                    ctx.stroke();
+                }
+            }
+            
+            ctx.restore();
+        }
+        
+        function getElementAtPixel(clickX, clickY) {
+            addDebug('=== CLICK DETECTION START ===');
+            
+            // Convert canvas coordinates to graph coordinates
+            const graphX = (clickX - pan.x) / zoom;
+            const graphY = (clickY - pan.y) / zoom;
+            
+            addDebug(`Raw click: x=${clickX}, y=${clickY}`);
+            addDebug(`Canvas: ${canvas.width}x${canvas.height}`);
+            addDebug(`Pan: x=${pan.x.toFixed(2)}, y=${pan.y.toFixed(2)}`);
+            addDebug(`Zoom: ${zoom}`);
+            addDebug(`Graph click: x=${graphX.toFixed(2)}, y=${graphY.toFixed(2)}`);
+            
+            // Check each node
+            let closestNode = null;
+            let closestDistance = Infinity;
+            
+            testNodes.forEach(node => {
+                const distance = Math.sqrt((graphX - node.x) ** 2 + (graphY - node.y) ** 2);
+                addDebug(`Node ${node.id}: pos(${node.x}, ${node.y}) distance=${distance.toFixed(2)}`);
+                
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestNode = node;
+                }
+            });
+            
+            addDebug(`Closest node: ${closestNode?.id || 'none'} (distance: ${closestDistance.toFixed(2)})`);
+            
+            if (closestDistance <= 30) { // 30px radius
+                addDebug(`✅ NODE SELECTED: ${closestNode.id}`);
+                return closestNode;
+            }
+            
+            addDebug('❌ No node selected (distance > 30px)');
+            return null;
+        }
+        
+        // Click event handler
+        canvas.addEventListener('click', (event) => {
+            const rect = canvas.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const clickY = event.clientY - rect.top;
+            
+            addDebug('\n--- NEW CLICK ---');
+            getElementAtPixel(clickX, clickY);
+        });
+        
+        // Scroll to zoom
+        canvas.addEventListener('wheel', (event) => {
+            if (!enablePanZoom) return;
+            
+            event.preventDefault();
+            const zoomFactor = event.deltaY > 0 ? 0.9 : 1.1;
+            const newZoom = Math.max(0.5, Math.min(3, zoom * zoomFactor));
+            
+            zoom = newZoom;
+            drawCanvas();
+            addDebug(`Zoom changed to ${zoom.toFixed(2)}`);
+        });
+        
+        // Mouse pan
+        let isPanning = false;
+        let lastPanPoint = { x: 0, y: 0 };
+        
+        canvas.addEventListener('mousedown', (event) => {
+            if (!enablePanZoom) return;
+            
+            if (event.button === 0) { // Left click to pan
+                isPanning = true;
+                lastPanPoint = { x: event.clientX, y: event.clientY };
+            }
+        });
+        
+        canvas.addEventListener('mousemove', (event) => {
+            if (!enablePanZoom || !isPanning) return;
+            
+            const deltaX = event.clientX - lastPanPoint.x;
+            const deltaY = event.clientY - lastPanPoint.y;
+            
+            pan.x += deltaX;
+            pan.y += deltaY;
+            
+            lastPanPoint = { x: event.clientX, y: event.clientY };
+            drawCanvas();
+        });
+        
+        canvas.addEventListener('mouseup', () => {
+            isPanning = false;
+        });
+        
+        // Initialize
+        updateNodeInfo();
+        drawCanvas();
+        addDebug('Test initialized. Click on nodes to test detection!');
+    </script>
+</body>
+</html>

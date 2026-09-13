@@ -1,0 +1,65 @@
+batch_size: 100
+chunking_config: {}
+chunking_params: {}
+chunking_strategy: file_type_aware
+created_at: '2025-10-24T11:52:10.181196'
+description: Comprehensive enterprise document analysis with table extraction and
+  image explanation
+embedding_model: openai
+embedding_params: {}
+evaluation_config: {}
+evaluation_metrics:
+- precision
+- recall
+- f1_score
+extraction_config: {}
+extraction_params: {}
+extraction_types:
+- entities
+- tables
+- table_structure
+- image_explanation
+- ocr
+file_type_detection: true
+graph_namespace: enhanced_enterprise_docs
+graph_schema: {}
+max_workers: 4
+name: Enhanced Enterprise Document Analysis
+parallel_processing: true
+pipeline_id: 981e1337-4a2a-45f5-8be2-cbeb5ceb11cc
+quality_thresholds: {}
+reader_params: {}
+reader_strategies:
+  docx: text_reader
+  image: image_reader
+  pdf: pdf_reader
+  txt: text_reader
+relationship_config: {}
+reproducibility_seed: null
+retrieval_config: {}
+retrieval_methods:
+- hybrid_match
+- multimodal_retrieval
+save_evaluation: true
+save_intermediates: true
+save_pipeline: true
+save_retrieval_metrics: true
+sources:
+- file_types:
+  - pdf
+  - docx
+  - txt
+  - image
+  path: input-doc/
+  type: folder
+- path: https://example.com/reports
+  type: web_url
+supported_file_types:
+- pdf
+- docx
+- txt
+- image
+updated_at: '2025-10-24T11:52:10.181196'
+validation_config: {}
+validation_rules: []
+version: 2.0.0

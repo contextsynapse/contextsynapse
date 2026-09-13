@@ -1,0 +1,59 @@
+meta:
+  name: knowledge
+  version: "1.0"
+  description: "General knowledge base — articles, documents, facts, entities"
+
+node_types:
+  Document:
+    description: "A source document, article, or web page"
+    properties: { content: required, title: optional, source: optional, author: optional }
+    id_prefix: "doc"
+  Passage:
+    description: "A chunk or section of a document"
+    properties: { content: required, chunk_index: optional }
+    id_prefix: "pass"
+  Fact:
+    description: "An atomic factual statement extracted from text"
+    properties: { content: required, confidence: optional }
+    id_prefix: "fact"
+  Entity:
+    description: "A named entity — person, organization, place, product, or concept"
+    properties: { name: required, entity_type: optional }
+    id_prefix: "ent"
+  Concept:
+    description: "An abstract concept, topic, or theme"
+    properties: { name: required, description: optional }
+    id_prefix: "concept"
+
+relationships:
+  HAS_PASSAGE:
+    source: Document
+    target: Passage
+    description: "Document contains a passage"
+  STATES:
+    source: Passage
+    target: Fact
+    description: "A passage states a fact"
+  MENTIONS:
+    source: Passage
+    target: Entity
+    description: "A passage mentions an entity"
+  RELATES_TO:
+    source: Entity
+    target: Entity
+    description: "Two entities are related"
+  ABOUT:
+    source: Fact
+    target: Concept
+    description: "A fact is about a concept"
+  TAGGED:
+    source: Document
+    target: Concept
+    description: "A document is tagged with a concept"
+
+consumer_hints:
+  context_filter_labels: [Document, Fact, Entity, Concept]
+  search_expansion_labels: [Concept, Entity]
+  promotion_labels: [Fact, Insight]
+  cu_entity_labels: [Entity, Concept]
+  cu_edge_labels: [MENTIONS, RELATES_TO, ABOUT]

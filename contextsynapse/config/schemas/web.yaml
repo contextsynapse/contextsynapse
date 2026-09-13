@@ -1,0 +1,64 @@
+# Web Content Extraction Schema
+# Used when ingesting web pages, API docs, blog posts, and external
+# references into a web context.
+
+name: web
+
+node_types:
+  WebPage:
+    fields: [title, url, description, published_date, language]
+    required: [title]
+    description: "A web page, blog post, or online article"
+
+  Article:
+    fields: [title, author, published_date, summary, category, tags]
+    required: [title]
+    description: "A structured article or blog post with clear authorship"
+
+  Author:
+    fields: [name, url, affiliation, bio]
+    required: [name]
+    description: "An author, blogger, or content creator"
+
+  Entity:
+    fields: [name, type, description, url]
+    required: [name]
+    description: "A named entity mentioned in web content (product, service, place, event)"
+
+  Organization:
+    fields: [name, type, url, description]
+    required: [name]
+    description: "A company, institution, or organization referenced in content"
+
+edge_types:
+  LINKS_TO:
+    source: WebPage
+    target: WebPage
+  AUTHORED_BY:
+    source: Article
+    target: Author
+  MENTIONS:
+    source: WebPage
+    target: Entity
+  PUBLISHED_BY:
+    source: Article
+    target: Organization
+  CITES:
+    source: Article
+    target: Article
+  AFFILIATED_WITH:
+    source: Author
+    target: Organization
+
+fact_types:
+  - type: Claim
+    fields: [statement, confidence, source_url, source_text]
+    description: "A factual claim made in the web content"
+
+  - type: Statistic
+    fields: [name, value, unit, date, source_url, source_text]
+    description: "A numerical statistic or data point cited in the content"
+
+  - type: Date
+    fields: [event, date, description, source_text]
+    description: "A significant date or event mentioned in the content"

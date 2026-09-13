@@ -1,0 +1,44 @@
+id: test_rag_hybrid_001
+name: RAG Hybrid Search - With Prompt & Embedding Model
+description: 'Tests RAG query with hybrid search combining:
+
+  - Dense search (vector embeddings) with specified embedding model
+
+  - Sparse search (BM25/keyword)
+
+  - Graph search (relationship traversal)
+
+
+  Uses GPT-3.5-Turbo with custom prompt and embedding model specification.
+
+
+  Key features:
+
+  - Custom prompt for LLM generation
+
+  - Explicit embedding model for dense search
+
+  - Graph traversal for context expansion
+
+  '
+namespace: rag_regression_test
+expected_success: true
+tags:
+- rag
+- hybrid_search
+- prompt
+- embedding_model
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: 'Tests that prompts are available where models are used.
+
+  Tests that embedding models are specified for dense structures.
+
+  '
+query: ''
+priority: 5
+prerequisites:
+- RUN_INGESTION_PIPELINE
+requires_data: true
+requires_files: []

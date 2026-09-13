@@ -1,0 +1,29 @@
+id: test_match_001
+name: MATCH NODE - Basic
+description: Tests basic MATCH NODE query to find nodes by label and conditions
+query: |
+  CREATE NODE Person { name: "Alice", age: 30, city: "New York" };
+  CREATE NODE Person { name: "Bob", age: 25, city: "Boston" };
+  CREATE NODE Person { name: "Charlie", age: 35, city: "New York" };
+  MATCH NODE Person WHERE age > 28 AND city = "New York" LIMIT 10
+namespace: regression_test
+expected_success: true
+expected_nodes: 2
+expected_edges: null
+tags:
+- basic
+- match
+- query
+- node
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: |
+  Tests the new MATCH NODE syntax that was recently fixed.
+  Creates test data and then matches nodes based on WHERE conditions.
+  Verifies that MATCH NODE correctly filters nodes by label and properties.
+priority: 2
+prerequisites: []
+requires_data: false
+requires_files: []
+

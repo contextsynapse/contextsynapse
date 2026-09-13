@@ -1,0 +1,109 @@
+# Built-in Chunking Strategies Configuration
+strategies:
+  fixed_size:
+    name: "Fixed Size Chunking"
+    description: "Split text into fixed-size chunks"
+    parameters:
+      chunk_size: 1000
+      overlap: 200
+      preserve_sentences: true
+    implementation: "builtin/fixed_size_chunking.py"
+    function: "chunk_fixed_size"
+    output_validation:
+      required_fields: ["id", "content", "chunk_type", "chunk_index"]
+      chunk_types: ["text"]
+      max_chunk_size: 2000
+      min_chunk_size: 100
+
+  sentence_based:
+    name: "Sentence-Based Chunking"
+    description: "Split text at sentence boundaries"
+    parameters:
+      max_sentences: 5
+      min_sentences: 2
+      overlap_sentences: 1
+    implementation: "builtin/sentence_chunking.py"
+    function: "chunk_by_sentences"
+    output_validation:
+      required_fields: ["id", "content", "chunk_type", "chunk_index"]
+      chunk_types: ["text"]
+      max_chunk_size: 1500
+      min_chunk_size: 200
+
+  paragraph_based:
+    name: "Paragraph-Based Chunking"
+    description: "Split text at paragraph boundaries"
+    parameters:
+      max_paragraphs: 3
+      min_paragraphs: 1
+      overlap_paragraphs: 0
+    implementation: "builtin/paragraph_chunking.py"
+    function: "chunk_by_paragraphs"
+    output_validation:
+      required_fields: ["id", "content", "chunk_type", "chunk_index"]
+      chunk_types: ["text"]
+      max_chunk_size: 2000
+      min_chunk_size: 300
+
+  section_based:
+    name: "Section-Based Chunking"
+    description: "Split text based on document sections"
+    parameters:
+      section_markers: ["##", "###", "Chapter", "Section", "Part", "#"]
+      min_chunk_size: 500
+      max_chunk_size: 2000
+      preserve_hierarchy: true
+    implementation: "builtin/section_chunking.py"
+    function: "chunk_by_sections"
+    output_validation:
+      required_fields: ["id", "content", "chunk_type", "chunk_index", "section"]
+      chunk_types: ["text", "header"]
+      max_chunk_size: 2500
+      min_chunk_size: 400
+
+  table_aware:
+    name: "Table-Aware Chunking"
+    description: "Chunking that preserves table context"
+    parameters:
+      extract_tables: true
+      preserve_table_context: true
+      table_chunk_size: 300
+      context_before: 200
+      context_after: 200
+    implementation: "builtin/table_chunking.py"
+    function: "chunk_with_tables"
+    output_validation:
+      required_fields: ["id", "content", "chunk_type", "chunk_index"]
+      chunk_types: ["text", "table"]
+      max_chunk_size: 1500
+      min_chunk_size: 200
+
+  sliding_window:
+    name: "Sliding Window Chunking"
+    description: "Overlapping chunks with sliding window"
+    parameters:
+      window_size: 1000
+      step_size: 500
+      overlap_ratio: 0.5
+    implementation: "builtin/sliding_window_chunking.py"
+    function: "chunk_sliding_window"
+    output_validation:
+      required_fields: ["id", "content", "chunk_type", "chunk_index"]
+      chunk_types: ["text"]
+      max_chunk_size: 1200
+      min_chunk_size: 800
+
+  smart:
+    name: "Smart Auto-Detection"
+    description: "Automatically selects best strategy based on document type"
+    parameters:
+      document_type_detection: true
+      fallback_strategy: "fixed_size"
+      confidence_threshold: 0.7
+    implementation: "builtin/smart_chunking.py"
+    function: "chunk_smart"
+    output_validation:
+      required_fields: ["id", "content", "chunk_type", "chunk_index"]
+      chunk_types: ["text", "table", "header"]
+      max_chunk_size: 2000
+      min_chunk_size: 100

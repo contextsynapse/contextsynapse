@@ -1,0 +1,54 @@
+batch_size: 100
+chunking_config: {}
+chunking_params: {}
+chunking_strategy: llm_topic_aware
+created_at: '2025-10-24T11:52:10.194772'
+description: Comprehensive academic research paper analysis with table and figure
+  extraction
+embedding_model: openai
+embedding_params: {}
+evaluation_config: {}
+evaluation_metrics:
+- accuracy
+- coverage
+- relevance
+extraction_config: {}
+extraction_params: {}
+extraction_types:
+- entities
+- tables
+- table_structure
+- image_explanation
+- document_layout
+file_type_detection: true
+graph_namespace: enhanced_research_papers
+graph_schema: {}
+max_workers: 4
+name: Enhanced Research Paper Analysis
+parallel_processing: true
+pipeline_id: 2e7db90a-eea9-47e2-8cfa-c5117730c985
+quality_thresholds: {}
+reader_params: {}
+reader_strategies:
+  pdf: pdf_reader
+relationship_config: {}
+reproducibility_seed: null
+retrieval_config: {}
+retrieval_methods:
+- hybrid_match
+- graph_traversal
+save_evaluation: true
+save_intermediates: true
+save_pipeline: true
+save_retrieval_metrics: true
+sources:
+- file_types:
+  - pdf
+  path: papers/
+  type: folder
+supported_file_types:
+- pdf
+updated_at: '2025-10-24T11:52:10.194772'
+validation_config: {}
+validation_rules: []
+version: 2.0.0

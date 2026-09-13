@@ -1,0 +1,29 @@
+id: test_update_001
+name: UPDATE EDGE - Basic
+description: Tests basic UPDATE EDGE query to modify edge properties
+query: |
+  CREATE NODE Person AS p1 { name: "Alice" };
+  CREATE NODE Person AS p2 { name: "Bob" };
+  CREATE EDGE KNOWS SRC p1 DEST p2 { weight: 1.0, since: 2020 };
+  UPDATE EDGE KNOWS SET { weight: 2.0, updated: true } WHERE source.name = "Alice" AND target.name = "Bob"
+namespace: regression_test
+expected_success: true
+expected_nodes: 0
+expected_edges: 1
+tags:
+- basic
+- update
+- edge
+verify_persistence: true
+test_both_modes: true
+approved_by: system
+notes: |
+  Tests UPDATE EDGE query to modify edge properties.
+  Creates an edge and then updates its properties using WHERE conditions.
+  Verifies that UPDATE EDGE correctly modifies edge properties.
+priority: 2
+prerequisites: []
+requires_data: false
+requires_files: []
+
+

@@ -1,0 +1,35 @@
+id: test_rag_graph_weighted_eval_001
+name: RAG Graph Weighted - With Evaluation Metrics
+description: 'Tests RAG query with weighted graph traversal:
+
+  - Edge weights influence traversal
+
+  - Prioritizes important relationships
+
+  - Evaluation of weighted scoring
+
+
+  Uses GPT-3.5-Turbo with custom prompt and embedding model.
+
+  '
+namespace: rag_regression_test_graph
+expected_success: true
+tags:
+- rag
+- graph_search
+- weighted
+- evaluation
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: 'Tests weighted graph traversal with evaluation.
+
+  Measures effectiveness of weight-based prioritization.
+
+  '
+query: ''
+priority: 5
+prerequisites:
+- RUN_INGESTION_PIPELINE
+requires_data: true
+requires_files: []

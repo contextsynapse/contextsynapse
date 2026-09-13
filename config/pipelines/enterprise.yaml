@@ -1,0 +1,33 @@
+batch_size: 100
+chunking_params: {}
+chunking_strategy: smart
+created_at: '2025-10-24T11:38:17.114746'
+description: Comprehensive enterprise document analysis pipeline
+embedding_model: openai
+embedding_params: {}
+extraction_params: {}
+extraction_types:
+- entities
+- tables
+graph_namespace: enterprise_docs
+graph_schema: {}
+max_workers: 4
+name: Enterprise Document Analysis
+parallel_processing: true
+pipeline_id: dd4e17f8-f413-4877-9e6c-fbb6e76759b9
+quality_thresholds: {}
+reproducibility_seed: null
+save_intermediates: true
+save_pipeline: true
+sources:
+- file_types:
+  - pdf
+  - docx
+  - txt
+  path: input-doc/
+  type: folder
+- path: https://example.com/reports
+  type: web_url
+updated_at: '2025-10-24T11:38:17.114746'
+validation_rules: []
+version: 1.0.0

@@ -1,0 +1,31 @@
+id: test_traverse_001
+name: TRAVERSE - Basic
+description: Tests basic TRAVERSE query to navigate graph relationships
+query: |
+  CREATE NODE Person AS p1 { name: "Alice" };
+  CREATE NODE Person AS p2 { name: "Bob" };
+  CREATE NODE Person AS p3 { name: "Charlie" };
+  CREATE EDGE KNOWS SRC p1 DEST p2 { since: 2020 };
+  CREATE EDGE KNOWS SRC p2 DEST p3 { since: 2021 };
+  TRAVERSE FROM p1 VIA KNOWS LIMIT 10
+namespace: regression_test
+expected_success: true
+expected_nodes: 2
+expected_edges: null
+tags:
+- basic
+- traverse
+- query
+- graph
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: |
+  Tests basic TRAVERSE query to navigate graph relationships.
+  Creates a simple graph and traverses from a starting node via edges.
+  Verifies that TRAVERSE correctly follows relationships.
+priority: 2
+prerequisites: []
+requires_data: false
+requires_files: []
+

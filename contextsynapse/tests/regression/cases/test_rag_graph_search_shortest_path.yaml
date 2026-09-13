@@ -1,0 +1,41 @@
+id: test_rag_003
+name: RAG Graph Search - Shortest Path Traversal
+description: 'Tests RAG query with shortest path traversal for efficient context linking.
+
+  Finds optimal paths between related concepts.
+
+
+  Strategy:
+
+  1. Hybrid search to find initial chunks
+
+  2. Shortest path traversal to related concepts
+
+  3. Link concepts efficiently
+
+  4. Generate answer with linked context
+
+  '
+namespace: rag_regression_test_graph
+expected_success: true
+query: ''
+expected_nodes: 5
+expected_edges: 8
+tags:
+- rag
+- graph_search
+- shortest_path
+- traversal
+verify_persistence: true
+test_both_modes: true
+approved_by: system
+notes: 'Tests shortest path traversal for efficient RAG context linking.
+
+  Ensures embedding model is specified for dense search.
+
+  '
+priority: 5
+prerequisites:
+- RUN_INGESTION_PIPELINE
+requires_data: true
+requires_files: []

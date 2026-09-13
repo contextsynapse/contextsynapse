@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "contextsynapse-weather"
+version = "0.1.0"
+description = "Example weather vertical plugin for ContextCore"
+requires-python = ">=3.10"
+dependencies = ["contextsynapse>=1.0.0"]
+
+[project.entry-points."contextsynapse.plugins"]
+weather = "weather_vertical.plugin:WeatherVertical"

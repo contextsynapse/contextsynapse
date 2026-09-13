@@ -1,0 +1,139 @@
+-- ============================================================================
+-- TCS Annual Report Test Queries
+-- ============================================================================
+-- These queries can be executed after running the pipeline
+-- ============================================================================
+
+-- 1. Setup
+CREATE NAMESPACE tcs_annual_report_test;
+USE NAMESPACE tcs_annual_report_test;
+
+-- 2. Create Pipeline (adjust PDF path as needed)
+CREATE PIPELINE tcs_annual_report_pipeline
+IN NAMESPACE tcs_annual_report_test
+SOURCE COLLECTION raw_docs
+TARGET COLLECTION processed_docs
+DESCRIPTION "TCS Annual Report Pipeline (10-20 pages)"
+STAGES = [
+STEP extract
+    EXTRACT FROM FILE "input-doc/tcs-annual-report.pdf"
+    USING READER "AUTO"
+    DETECT (TEXT, TABLES, IMAGES)
+    PARSE_METADATA TRUE
+    STORE AS NODE TYPES (Document, Table, Image)
+    LINK (Document TO Table, Document TO Image)
+    STORE INTERMEDIATE IN COLLECTION raw_docs,
+
+STEP chunk
+    CHUNK BY semantic
+    USING MODEL "gpt-4"
+    PROMPT "You are a semantic chunking expert. Analyze the text and identify natural topic boundaries. Create chunks that preserve semantic coherence and topic continuity. Each chunk should be a complete thought or concept."
+    PARAMETERS (max_tokens=1000, overlap=200, max_pages=20, strategy="semantic", temperature=0.3, max_tokens_llm=2000, topic_detection=true, preserve_topics=true, coherence_threshold=0.8)
+    STORE AS NODE TYPE Chunk
+    LINK TO Document ON HAS_CHUNK
+    STORE INTERMEDIATE IN COLLECTION processed_docs,
+
+STEP embed
+    EMBED USING PROFILE embedv1
+    PARAMETERS (model="text-embedding-3-large", dimensions=3072)
+    STORE EMBEDDING IN Chunk.embedding
+    STORE INTERMEDIATE IN COLLECTION processed_docs,
+
+STEP extract_entities
+    EXTRACT ENTITIES
+    USING LLM "gpt-4"
+    PROMPT "Extract all named entities from the text. Identify and categorize entities such as: Organizations, People, Locations, Products, Dates, Financial figures, Technologies, Concepts, and Events. Return entities in JSON format with type, name, and context."
+    PARAMETERS (temperature=0.3, max_tokens=2000)
+    STORE AS NODE TYPE Entity
+    LINK TO Chunk ON MENTIONS
+    STORE INTERMEDIATE IN COLLECTION processed_docs,
+
+STEP extract_relationships
+    EXTRACT RELATIONSHIPS
+    USING LLM "gpt-4"
+    PROMPT "Identify relationships between entities in the text. Extract semantic relationships such as: WORKS_FOR, LOCATED_IN, PART_OF, RELATED_TO, FUNDS, DEVELOPS, OWNS, PARTNERS_WITH. Return relationships in JSON format with source entity, target entity, relationship type, and context."
+    PARAMETERS (temperature=0.3, max_tokens=2000)
+    STORE AS EDGE TYPE Relationship
+    STORE INTERMEDIATE IN COLLECTION processed_docs
+];
+
+-- 3. Run Pipeline
+USE NAMESPACE tcs_annual_report_test;
+RUN PIPELINE tcs_annual_report_pipeline;
+
+-- 4. Verification Queries
+USE NAMESPACE tcs_annual_report_test;
+
+-- Count documents
+SELECT COUNT(*) FROM Document;
+
+-- Count chunks
+SELECT COUNT(*) FROM Chunk;
+
+-- Count entities
+SELECT COUNT(*) FROM Entity;
+
+-- Count tables
+SELECT COUNT(*) FROM Table;
+
+-- List documents
+SELECT * FROM Document LIMIT 5;
+
+-- List chunks
+SELECT * FROM Chunk LIMIT 5;
+
+-- List entities
+SELECT * FROM Entity LIMIT 10;
+
+-- Search for revenue
+HYBRID SEARCH 'revenue' IN Chunk LIMIT 5;
+
+-- Search for TCS entities
+HYBRID SEARCH 'TCS' IN Entity LIMIT 5;
+
+-- RAG queries
+RAG 'What is TCS revenue?' AT NAMESPACE tcs_annual_report_test;
+RAG 'What are the key financial metrics?' AT NAMESPACE tcs_annual_report_test;
+RAG 'Who is the CEO?' AT NAMESPACE tcs_annual_report_test;
+RAG 'How many employees does TCS have?' AT NAMESPACE tcs_annual_report_test;
+RAG 'What are the subsidiaries?' AT NAMESPACE tcs_annual_report_test LIMIT 5;
+
+-- Graph traversal
+TRAVERSE FROM Document TO Chunk LIMIT 10;
+TRAVERSE FROM Chunk TO Entity LIMIT 10;
+
+-- Analytics
+PAGERANK ON Chunk ITERATIONS 10;
+COMMUNITY DETECTION ALGORITHM louvain ON Chunk;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

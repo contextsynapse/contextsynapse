@@ -1,0 +1,118 @@
+template_name: Market Data
+description: "Live stock prices, index levels, FX rates — OHLCV via Yahoo Finance. Feeds the price sensor in SensorFusion for all tracked stocks."
+category: market
+scope: stock
+tags: [price, ohlcv, index, fx, yfinance]
+recommended_for: [equity, index, hybrid]
+
+sensors:
+  - name: india_stocks_price
+    description: "NSE price feed for tracked Indian IT stocks (TCS, Infosys, Wipro, HCLTech, Tech Mahindra)"
+    type: moving
+    version: "1.0"
+    active: true
+    connector:
+      type: stock_price
+      sources:
+        - "TCS.NS"
+        - "INFY.NS"
+        - "WIPRO.NS"
+        - "HCLTECH.NS"
+        - "TECHM.NS"
+      schedule: "*/15 9-16 * * 1-5"
+      poll_interval_minutes: 15
+      filter:
+        topics: []
+        exclude: []
+    schema:
+      node_type: Indicator
+      extraction_strategy: price_feed
+    hierarchy:
+      affects_sectors: ["IT Services"]
+      upstream_of: "Nifty IT Index"
+      weight: 0.9
+      level: market
+    decay:
+      rate: 0.0
+      profile: normal
+    relevance:
+      sectors: ["IT Services"]
+      keywords: ["TCS", "Infosys", "Wipro", "HCLTech", "Tech Mahindra"]
+
+  - name: global_indices_price
+    description: "Nifty 50, Sensex, S&P 500, NASDAQ — broad market index levels"
+    type: moving
+    version: "1.0"
+    active: true
+    connector:
+      type: stock_price
+      sources:
+        - "^NSEI"
+        - "^BSESN"
+        - "^GSPC"
+        - "^IXIC"
+        - "^CNXIT"
+        - "^VIX"
+      schedule: "*/15 9-16 * * 1-5"
+      poll_interval_minutes: 15
+      filter:
+        topics: []
+        exclude: []
+    schema:
+      node_type: Indicator
+      extraction_strategy: price_feed
+    hierarchy:
+      affects_sectors: ["IT Services", "Banking", "Auto", "FMCG"]
+      upstream_of: "India Economy"
+      weight: 0.85
+      level: market
+    decay:
+      rate: 0.0
+      profile: normal
+    relevance:
+      sectors: ["IT Services"]
+      keywords: ["Nifty", "Sensex", "index", "VIX"]
+
+  - name: fx_rates_price
+    description: "USD/INR, EUR/INR, GBP/INR — exchange rate impact on IT revenue"
+    type: moving
+    version: "1.0"
+    active: true
+    connector:
+      type: stock_price
+      sources:
+        - "USDINR=X"
+        - "EURINR=X"
+        - "GBPINR=X"
+        - "JPYINR=X"
+      schedule: "*/30 * * * *"
+      poll_interval_minutes: 30
+      filter:
+        topics: []
+        exclude: []
+    schema:
+      node_type: Indicator
+      extraction_strategy: price_feed
+    hierarchy:
+      affects_sectors: ["IT Services"]
+      upstream_of: "Currency/Forex"
+      weight: 0.9
+      level: market
+    decay:
+      rate: 0.0
+      profile: normal
+    relevance:
+      sectors: ["IT Services"]
+      keywords: ["rupee", "dollar", "forex", "USD", "INR"]
+
+pipeline:
+  connector: stock_price
+  sources:
+    - "TCS.NS"
+    - "INFY.NS"
+    - "^NSEI"
+    - "USDINR=X"
+  schedule: "*/15 9-16 * * 1-5"
+  config:
+    period: "5d"
+    interval: "1h"

@@ -1,0 +1,85 @@
+{
+  "storage_formats": {
+    "entities": {
+      "format": "columnar",
+      "columns": [
+        "id",
+        "name",
+        "type",
+        "properties",
+        "created_at",
+        "updated_at"
+      ],
+      "indexes": [
+        "name",
+        "type",
+        "created_at"
+      ],
+      "compression": "gzip"
+    },
+    "chunks": {
+      "format": "columnar",
+      "columns": [
+        "id",
+        "content",
+        "chunk_index",
+        "source",
+        "text_length",
+        "embedding"
+      ],
+      "indexes": [
+        "chunk_index",
+        "source",
+        "text_length"
+      ],
+      "compression": "lz4"
+    },
+    "relationships": {
+      "format": "columnar",
+      "columns": [
+        "source",
+        "target",
+        "label",
+        "properties",
+        "created_at"
+      ],
+      "indexes": [
+        "source",
+        "target",
+        "label"
+      ],
+      "compression": "gzip"
+    },
+    "embeddings": {
+      "format": "columnar",
+      "columns": [
+        "node_id",
+        "embedding_vector",
+        "model",
+        "dimensions"
+      ],
+      "indexes": [
+        "node_id",
+        "model"
+      ],
+      "compression": "lz4"
+    },
+    "metadata": {
+      "format": "columnar",
+      "columns": [
+        "node_id",
+        "metadata_key",
+        "metadata_value",
+        "data_type"
+      ],
+      "indexes": [
+        "node_id",
+        "metadata_key"
+      ],
+      "compression": "gzip"
+    }
+  },
+  "default_format": "columnar",
+  "compression_level": 6,
+  "batch_size": 1000
+}

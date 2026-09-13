@@ -1,0 +1,49 @@
+# Resume / CV Extraction Schema
+# Used when ingesting resumes, CVs, LinkedIn profiles, and candidate profiles.
+
+name: resume
+
+node_types:
+  Candidate:
+    fields: [name, email, phone, location, summary, linkedin_url, portfolio_url]
+    required: [name]
+    description: "The candidate or applicant the resume belongs to"
+
+  Skill:
+    fields: [name, category, proficiency, years_experience]
+    required: [name]
+    description: "A technical or soft skill listed on the resume"
+
+  Experience:
+    fields: [company, title, start_date, end_date, location, description, achievements]
+    required: [company, title]
+    description: "A work experience or employment history entry"
+
+  Education:
+    fields: [institution, degree, field_of_study, start_date, end_date, gpa, honors]
+    required: [institution]
+    description: "An educational qualification or degree"
+
+  Certification:
+    fields: [name, issuer, date_issued, expiry_date, credential_id]
+    required: [name]
+    description: "A professional certification or credential"
+
+edge_types:
+  HAS_SKILL:
+    source: Candidate
+    target: Skill
+  WORKED_AT:
+    source: Candidate
+    target: Experience
+  STUDIED_AT:
+    source: Candidate
+    target: Education
+  HOLDS:
+    source: Candidate
+    target: Certification
+
+fact_types:
+  - type: Achievement
+    fields: [description, metric, impact, source_text]
+    description: "A quantifiable achievement or accomplishment mentioned in the resume"

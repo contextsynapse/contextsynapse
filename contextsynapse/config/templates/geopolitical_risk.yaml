@@ -1,0 +1,46 @@
+name: geopolitical_risk
+description: "Geopolitical risk analysis — tracks countries, leaders, alliances, and diplomatic events"
+
+entity_types:
+  - Country
+  - Leader
+  - Alliance
+  - Treaty
+  - Organization
+
+indicator_types:
+  - SanctionCount
+  - TradeVolume
+  - MilitarySpend
+  - DiplomaticIncident
+
+signals:
+  - type: sentiment_reversal
+    config:
+      window_hours: 72
+      min_mentions: 5
+
+  - type: co_occurrence
+    config:
+      min_count: 3
+      window_days: 14
+
+correlations:
+  - type: entity_vs_indicator
+    config:
+      lag_max_days: 30
+      min_samples: 5
+      min_confidence: 0.5
+
+  - type: geo_sentiment_cluster
+    config:
+      level: region
+      window_days: 60
+
+schedule: daily
+
+quality:
+  min_samples: 5
+  min_confidence: 0.5
+  decay_days: 60
+  max_correlations: 500

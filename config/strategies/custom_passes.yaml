@@ -1,0 +1,216 @@
+# Custom Extraction Passes Configuration
+# Add new passes here without modifying code!
+
+passes:
+  # Pass 5: Entity Enrichment
+  entity_enrichment:
+    description: "Enrich entities with additional metadata from external knowledge"
+    prompt: |
+      Enrich the following entities with additional metadata from your knowledge base.
+      
+      Entities:
+      {entities}
+      
+      For each entity, add:
+      - wikipedia_link: Link to Wikipedia article (if applicable, use null if not)
+      - category: High-level category (Technology, Business, Legal, Medical, etc.)
+      - confidence_score: Confidence in entity accuracy (0.0-1.0)
+      - aliases: List of alternative names
+      
+      Output ONLY valid JSON in this format:
+      {{
+        "entities": [
+          {{
+            "entity_name": "example name",
+            "entity_type": "ExampleType",
+            "properties": {{
+              "wikipedia_link": "https://en.wikipedia.org/wiki/Example",
+              "category": "Technology",
+              "confidence_score": 0.95,
+              "aliases": ["alt1", "alt2"]
+            }}
+          }}
+        ]
+      }}
+    input_vars: [entities]
+    output_key: entities
+    process_type: entity_transform
+    dependencies: [entity_extraction]
+  
+  # Pass 6: Sentiment Analysis
+  sentiment_analysis:
+    description: "Analyze sentiment of relations and entities"
+    prompt: |
+      Analyze the sentiment of the following entities and their relationships.
+      
+      Entities:
+      {entities}
+      
+      Relations:
+      {relations}
+      
+      For each entity and relation, determine:
+      - sentiment: positive, negative, neutral, or mixed
+      - sentiment_score: -1.0 (very negative) to 1.0 (very positive)
+      - emotional_context: Brief description of emotional tone
+      
+      Output ONLY valid JSON in this format:
+      {{
+        "entities": [
+          {{
+            "entity_name": "example",
+            "sentiment": "positive",
+            "sentiment_score": 0.8,
+            "emotional_context": "optimistic tone"
+          }}
+        ],
+        "relations": [
+          {{
+            "source": "Entity1",
+            "target": "Entity2",
+            "relation": "RELATION_TYPE",
+            "sentiment": "neutral",
+            "sentiment_score": 0.0
+          }}
+        ]
+      }}
+    input_vars: [entities, relations]
+    output_key: sentiments
+    process_type: entity_transform
+    dependencies: [entity_extraction, relation_induction]
+  
+  # Pass 7: Temporal Extraction
+  temporal_extraction:
+    description: "Extract temporal information from entities and relations"
+    prompt: |
+      Extract temporal information (dates, times, durations) from the entities and text.
+      
+      Text:
+      {chunk_text}
+      
+      Entities:
+      {entities}
+      
+      For each entity or relation, identify:
+      - temporal_marker: The date/time reference (e.g., "January 2024", "2 years ago")
+      - timestamp: Normalized ISO 8601 timestamp (if determinable)
+      - temporal_type: point_in_time, duration, range, or relative
+      
+      Output ONLY valid JSON in this format:
+      {{
+        "entities": [
+          {{
+            "entity_name": "example",
+            "temporal_marker": "January 2024",
+            "timestamp": "2024-01-01T00:00:00Z",
+            "temporal_type": "point_in_time"
+          }}
+        ]
+      }}
+    input_vars: [chunk_text, entities]
+    output_key: temporal_data
+    process_type: entity_transform
+    dependencies: [entity_extraction]
+  
+  # Pass 8: Entity Classification
+  entity_classification:
+    description: "Classify entities into domain-specific categories"
+    prompt: |
+      Classify the following entities into domain-specific categories.
+      
+      Entities:
+      {entities}
+      
+      Domain: {domain}
+      
+      For each entity, provide:
+      - primary_category: Main classification
+      - subcategories: List of more specific classifications
+      - confidence: Classification confidence (0.0-1.0)
+      - reasoning: Brief explanation
+      
+      Output ONLY valid JSON in this format:
+      {{
+        "entities": [
+          {{
+            "entity_name": "example",
+            "primary_category": "Legal Document",
+            "subcategories": ["Policy", "Contract", "Regulation"],
+            "confidence": 0.92,
+            "reasoning": "Contains legal terminology and structure"
+          }}
+        ]
+      }}
+    input_vars: [entities, domain]
+    output_key: classified_entities
+    process_type: entity_transform
+    dependencies: [entity_extraction]
+  
+  # Pass 9: Conflict Detection
+  conflict_detection:
+    description: "Detect conflicts or contradictions between entities and relations"
+    prompt: |
+      Analyze the entities and relations to detect conflicts or contradictions.
+      
+      Entities:
+      {entities}
+      
+      Relations:
+      {relations}
+      
+      Identify:
+      - Contradictory statements
+      - Logical inconsistencies
+      - Temporal conflicts
+      - Mutually exclusive relationships
+      
+      Output ONLY valid JSON in this format:
+      {{
+        "conflicts": [
+          {{
+            "conflict_type": "contradiction",
+            "entities_involved": ["Entity1", "Entity2"],
+            "description": "Entity1 states X while Entity2 states not-X",
+            "severity": "high",
+            "confidence": 0.85
+          }}
+        ]
+      }}
+    input_vars: [entities, relations]
+    output_key: conflicts
+    process_type: custom
+    dependencies: [entity_extraction, relation_induction]
+  
+  # Pass 10: Entity Linking
+  entity_linking:
+    description: "Link entities to external knowledge bases (DBpedia, Wikidata, etc.)"
+    prompt: |
+      Link the following entities to external knowledge bases.
+      
+      Entities:
+      {entities}
+      
+      For each entity, find:
+      - dbpedia_uri: DBpedia URI (if available)
+      - wikidata_id: Wikidata ID (if available)
+      - confidence: Linking confidence (0.0-1.0)
+      - alternative_matches: List of other possible matches
+      
+      Output ONLY valid JSON in this format:
+      {{
+        "entities": [
+          {{
+            "entity_name": "example",
+            "dbpedia_uri": "http://dbpedia.org/resource/Example",
+            "wikidata_id": "Q12345",
+            "confidence": 0.9,
+            "alternative_matches": []
+          }}
+        ]
+      }}
+    input_vars: [entities]
+    output_key: linked_entities
+    process_type: entity_transform
+    dependencies: [entity_extraction]
+
+

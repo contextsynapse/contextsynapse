@@ -1,0 +1,57 @@
+id: test_semantic_boundary_001
+name: Semantic Boundary - Chunking with Boundaries
+description: 'Tests ingestion pipeline with semantic boundary detection for chunking.
+
+  Uses semantic boundary detection to preserve topic boundaries.
+
+  Uses GPT-3.5-Turbo for chunking.
+
+  Uses text-embedding-ada-002 for embeddings.
+
+  '
+query: "CREATE PIPELINE regression_semantic_boundary_pipeline\nIN NAMESPACE semantic_boundary_test\n\
+  SOURCE COLLECTION raw_docs\nTARGET COLLECTION knowledge_graph\nDESCRIPTION \"Regression\
+  \ test: Semantic boundary chunking (25-30 pages)\"\nEXECUTION_MODE AUTO\nSTAGES\
+  \ = [\n  STEP extract\n      EXTRACT FROM FILE \"input-doc/annual-report-2024-2025.pdf\"\
+  \n      USING READER \"AUTO\"\n      DETECT (TEXT, TABLES)\n      PARSE_METADATA\
+  \ TRUE\n      MAX_PAGES 30,\n  \n  STEP chunk\n      CHUNK BY semantic\n      USING\
+  \ MODEL \"gpt-3.5-turbo\"\n      PROMPT \"Detect semantic boundaries and split text\
+  \ into chunks preserving topic continuity. Each chunk should be coherent and self-contained.\"\
+  \n      PARAMETERS (\n          max_tokens: 1000,\n          overlap: 100,\n   \
+  \       similarity_threshold: 0.7,\n          detect_boundaries: TRUE,\n       \
+  \   preserve_boundaries: TRUE\n      )\n      STORE AS NODE TYPE Chunk\n      LINK\
+  \ TO Document ON HAS_CHUNK,\n  \n  STEP embed\n      EMBED USING MODEL \"text-embedding-ada-002\"\
+  \n      PARAMETERS (dimensions: 1536, normalize: TRUE)\n      STORE EMBEDDING IN\
+  \ Chunk.embedding,\n  \n  STEP index\n      INDEX USING {bm25: TRUE, vector: TRUE,\
+  \ graph: TRUE}\n      BUILD_INDEX \"regression_semantic_boundary_index\"\n     \
+  \ STORE IN COLLECTION knowledge_graph\n]"
+namespace: semantic_boundary_test
+expected_success: true
+expected_nodes: 50
+expected_edges: 10
+tags:
+- semantic_boundary
+- chunking
+- pipeline
+- gpt-3.5
+- embedding
+verify_persistence: true
+test_both_modes: true
+approved_by: system
+notes: 'Tests CREATE PIPELINE with semantic boundary detection.
+
+  Includes detect_boundaries and preserve_boundaries parameters.
+
+  Includes prompt for chunking model.
+
+  Includes explicit embedding model.
+
+  Verifies semantic boundaries are preserved in chunks.
+
+  '
+skip: true
+skip_reason: Semantic boundary detection not fully implemented
+priority: 6
+prerequisites: []
+requires_data: false
+requires_files: []

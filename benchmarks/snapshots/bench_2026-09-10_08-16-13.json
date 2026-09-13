@@ -1,0 +1,62 @@
+{
+  "timestamp": "2026-09-10T08:16:13.384268+00:00",
+  "date": "2026-09-10 08:16:13 UTC",
+  "platform": {
+    "python": "3.11.3",
+    "os": "Windows",
+    "machine": "AMD64",
+    "processor": "Intel64 Family 6 Model 154 Stepping 3, GenuineIntel"
+  },
+  "storage": {
+    "1000": {
+      "node_insert_ops_sec": 308995,
+      "edge_insert_ops_sec": 262904,
+      "node_lookup_ops_sec": 1245951,
+      "neighbor_trav_ops_sec": 510517,
+      "prop_filter_sec": 4.5e-05,
+      "prop_filter_found": 1000,
+      "edge_count": 2999
+    },
+    "10000": {
+      "node_insert_ops_sec": 334942,
+      "edge_insert_ops_sec": 97028,
+      "node_lookup_ops_sec": 1069301,
+      "neighbor_trav_ops_sec": 251807,
+      "prop_filter_sec": 0.000245,
+      "prop_filter_found": 10000,
+      "edge_count": 29995,
+      "memory_mb": 23.7,
+      "bytes_per_node": 2482
+    },
+    "50000": {
+      "node_insert_ops_sec": 191087,
+      "edge_insert_ops_sec": 96352,
+      "node_lookup_ops_sec": 976524,
+      "neighbor_trav_ops_sec": 77885,
+      "prop_filter_sec": 0.001881,
+      "prop_filter_found": 50000,
+      "edge_count": 149996,
+      "memory_mb": 117.3,
+      "bytes_per_node": 2459
+    }
+  },
+  "accuracy": {
+    "data_integrity": {
+      "nodes": 5000,
+      "missing": 0,
+      "mismatches": 0,
+      "score": 1.0
+    },
+    "dedup": {
+      "insertions": 50,
+      "final_count": 1,
+      "pass": true
+    },
+    "edge_integrity": {
+      "edges_created": 3998,
+      "edges_found": 1283,
+      "edges_missing": 0,
+      "score": 1.0
+    }
+  }
+}

@@ -1,0 +1,35 @@
+id: test_timetravel_002
+name: Time Travel - Query AS OF TIMESTAMP
+description: 'Tests SELECT query with AS OF TIMESTAMP clause for time-travel queries.
+
+  Requires temporal queries to be enabled.
+
+  '
+query: 'CREATE NODE Person { name: "Bob", age: 25 };
+
+  UPDATE NODE Person SET { age: 26 } WHERE name = "Bob";
+
+
+  SELECT * FROM Person AS OF TIMESTAMP ''2024-06-01T00:00:00Z'' WHERE name = "Bob"'
+namespace: timetravel_test
+expected_success: true
+tags:
+- time_travel
+- temporal
+- as_of
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: 'Tests SELECT query with AS OF TIMESTAMP clause.
+
+  Requires temporal queries to be enabled.
+
+  Should return node state as of specified timestamp.
+
+  '
+skip: true
+skip_reason: Temporal queries not fully implemented
+priority: 6
+prerequisites: []
+requires_data: false
+requires_files: []

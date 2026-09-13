@@ -1,0 +1,18 @@
+name: amfi_nav
+connector_type: amfi_nav
+target_context_id: fund_nav
+poll_interval_minutes: 1440
+active: true
+config:
+  scheme_codes:
+    # Large Cap — Top 10 by AUM
+    - "119551"   # HDFC Top 100 Fund - Growth
+    - "120503"   # ICICI Prudential Bluechip Fund - Growth
+    - "118989"   # SBI Blue Chip Fund - Growth
+    - "100356"   # Axis Bluechip Fund - Growth
+    - "101209"   # Mirae Asset Large Cap Fund - Growth
+    - "118834"   # Kotak Bluechip Fund - Growth
+    - "100520"   # UTI Nifty 50 Index Fund - Growth
+    - "120505"   # ICICI Prudential Nifty 50 Index Fund - Growth
+    - "119028"   # HDFC Index Fund - Nifty 50 Plan - Growth
+    - "120716"   # Nippon India Large Cap Fund - Growth

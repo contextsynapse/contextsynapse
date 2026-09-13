@@ -1,0 +1,24 @@
+{
+  "name": "Tech + Climate Intersection",
+  "description": "Articles at the intersection of technology and climate",
+  "context_type": "knowledge_base",
+  "sensitivity": "public",
+  "tags": ["news", "technology", "climate"],
+  "pipeline": {
+    "template_id": "builtin:smart-article",
+    "source_url": "https://www.theguardian.com/",
+    "max_pages": 5,
+    "schema_id": "news_article",
+    "schema_mode": "schema_plus"
+  },
+  "filters": {
+    "keyword_exclude": ["sport", "celebrity"],
+    "keyword_include": [],
+    "semantic_rules": [
+      {"description": "Technology and software industry news", "threshold": 0.6},
+      {"description": "Climate change, sustainability, and green energy", "threshold": 0.6}
+    ],
+    "semantic_mode": "and"
+  },
+  "schedule": {"trigger_type": "scheduled", "interval_minutes": 120}
+}

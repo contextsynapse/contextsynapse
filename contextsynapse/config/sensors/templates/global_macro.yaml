@@ -1,0 +1,47 @@
+template_name: Global Macro
+description: "Global risk signals affecting Indian equities — Fed policy, VIX fear index, dollar strength, oil price."
+category: macro
+scope: global
+tags: [global, macro, fed, vix, oil]
+recommended_for: [equity, commodity]
+
+sensors:
+  - name: fed_funds_rate
+    label: Fed Funds Rate
+    description: "US Federal Reserve rate decisions — global liquidity driver"
+    impact_type: cascading
+    decay_profile: step
+    scope: global
+    weight: 0.85
+
+  - name: vix
+    label: VIX Fear Index
+    description: "CBOE Volatility Index — global risk appetite/aversion gauge"
+    impact_type: immediate
+    decay_profile: exponential
+    scope: global
+    weight: 0.8
+
+  - name: dxy
+    label: US Dollar Index (DXY)
+    description: "Dollar strength — inversely correlated with EM equity flows"
+    impact_type: cascading
+    decay_profile: linear
+    scope: global
+    weight: 0.7
+
+  - name: crude_oil
+    label: Brent Crude Oil
+    description: "Oil price — direct input cost for India (80%+ import dependent)"
+    impact_type: direct
+    decay_profile: linear
+    scope: global
+    weight: 0.75
+
+pipeline:
+  connector: api
+  sources:
+    - fred_api
+    - yahoo_finance
+  schedule: "0 */2 * * *"
+  enrichment: fact_extraction

@@ -1,0 +1,32 @@
+batch_size: 100
+chunking_params: {}
+chunking_strategy: semantic
+created_at: '2025-10-24T11:38:17.117854'
+description: Multimedia content analysis pipeline
+embedding_model: openai
+embedding_params: {}
+extraction_params: {}
+extraction_types:
+- audio_transcript
+- video_frames
+- images
+graph_namespace: multimedia_content
+graph_schema: {}
+max_workers: 4
+name: Multimedia Content Analysis
+parallel_processing: true
+pipeline_id: f2f4a8a5-728d-4314-88be-7832985fb662
+quality_thresholds: {}
+reproducibility_seed: null
+save_intermediates: true
+save_pipeline: true
+sources:
+- file_types:
+  - mp4
+  - mp3
+  - jpg
+  path: multimedia/
+  type: folder
+updated_at: '2025-10-24T11:38:17.117854'
+validation_rules: []
+version: 1.0.0

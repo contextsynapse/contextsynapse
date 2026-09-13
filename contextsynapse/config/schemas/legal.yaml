@@ -1,0 +1,42 @@
+name: legal
+description: "Legal domain — cases, parties, clauses, precedents"
+
+node_types:
+  Case:
+    fields: [name, number, court, jurisdiction, status, date_filed]
+    required: [name]
+    description: "Legal case, lawsuit, or proceeding"
+  Party:
+    fields: [name, role, type, representation]
+    required: [name]
+    description: "Party to a case — plaintiff, defendant, witness"
+  Clause:
+    fields: [name, text, section, contract]
+    required: [name]
+    description: "Contract clause, provision, or term"
+  Statute:
+    fields: [name, code, section, jurisdiction, description]
+    required: [name]
+    description: "Law, statute, regulation, or ordinance"
+  Precedent:
+    fields: [name, citation, court, year, ruling]
+    required: [name]
+    description: "Legal precedent or prior ruling"
+  Obligation:
+    fields: [description, deadline, penalty, responsible_party]
+    required: [description]
+    description: "Legal obligation, requirement, or compliance duty"
+
+edge_types:
+  PARTY_TO:
+    source: Party
+    target: Case
+  CITES:
+    source: Case
+    target: Precedent
+  GOVERNS:
+    source: Statute
+    target: Obligation
+  BOUND_BY:
+    source: Party
+    target: Clause

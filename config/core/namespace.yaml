@@ -1,0 +1,46 @@
+{
+  "namespaces": {
+    "default": {
+      "description": "Default namespace for general use",
+      "permissions": [
+        "read",
+        "write",
+        "admin"
+      ]
+    },
+    "annual_report": {
+      "description": "Namespace for annual report data",
+      "permissions": [
+        "read",
+        "write"
+      ],
+      "graphs": [
+        "annual_report_advanced"
+      ]
+    },
+    "pdf_documents": {
+      "description": "Namespace for PDF document processing",
+      "permissions": [
+        "read",
+        "write"
+      ],
+      "graphs": [
+        "pdf_ingestion_db"
+      ]
+    },
+    "research": {
+      "description": "Namespace for research data",
+      "permissions": [
+        "read",
+        "write",
+        "admin"
+      ],
+      "graphs": [
+        "research_graph"
+      ]
+    }
+  },
+  "default_namespace": "default",
+  "namespace_separation": true,
+  "cross_namespace_queries": false
+}

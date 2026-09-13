@@ -1,0 +1,48 @@
+# Requirements Document Extraction Schema
+# Used when ingesting PRDs, BRDs, user stories, and specification documents.
+
+name: requirements_doc
+
+node_types:
+  Requirement:
+    fields: [id, title, description, type, priority, status, source]
+    required: [title]
+    description: "A functional or non-functional requirement"
+
+  Stakeholder:
+    fields: [name, role, organization, interest, influence]
+    required: [name]
+    description: "A stakeholder with a stake in the requirements"
+
+  Constraint:
+    fields: [title, description, type, rationale]
+    required: [title]
+    description: "A constraint or limitation that bounds the solution space"
+
+  AcceptanceCriteria:
+    fields: [title, description, requirement_id, testable, status]
+    required: [title]
+    description: "Criteria that must be met for a requirement to be considered done"
+
+edge_types:
+  REQUESTED_BY:
+    source: Requirement
+    target: Stakeholder
+  CONSTRAINED_BY:
+    source: Requirement
+    target: Constraint
+  VERIFIED_BY:
+    source: Requirement
+    target: AcceptanceCriteria
+  DEPENDS_ON:
+    source: Requirement
+    target: Requirement
+
+fact_types:
+  - type: Assumption
+    fields: [statement, risk, owner, source_text]
+    description: "An assumption made when defining requirements"
+
+  - type: OutOfScope
+    fields: [description, rationale, source_text]
+    description: "Something explicitly excluded from the scope of requirements"

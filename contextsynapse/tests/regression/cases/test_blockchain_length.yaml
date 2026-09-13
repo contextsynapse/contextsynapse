@@ -1,0 +1,37 @@
+id: test_blockchain_002
+name: Blockchain - Get Blockchain Length
+description: 'Tests GET BLOCKCHAIN LENGTH query to get number of blocks.
+
+  Requires traceability to be enabled.
+
+  '
+query: 'CREATE NODE TestNode { name: "test_node_1" };
+
+  CREATE NODE TestNode { name: "test_node_2" };
+
+  CREATE NODE TestNode { name: "test_node_3" };
+
+
+  GET BLOCKCHAIN LENGTH'
+namespace: blockchain_test
+expected_success: true
+tags:
+- blockchain
+- traceability
+- length
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: 'Tests GET BLOCKCHAIN LENGTH query.
+
+  Requires traceability to be enabled.
+
+  Should return number of blocks created.
+
+  '
+skip: true
+skip_reason: Traceability layer not enabled in default configuration
+priority: 6
+prerequisites: []
+requires_data: false
+requires_files: []

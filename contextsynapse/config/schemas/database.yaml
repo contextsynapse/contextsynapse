@@ -1,0 +1,74 @@
+# Database Extraction Schema
+# Used when ingesting database documentation, SQL schemas, ERD descriptions,
+# and data dictionaries into a database context.
+
+name: database
+
+node_types:
+  Table:
+    fields: [name, description, schema, row_count, engine]
+    required: [name]
+    description: "A database table or collection"
+
+  Column:
+    fields: [name, data_type, nullable, default_value, description, is_primary_key]
+    required: [name]
+    description: "A column or field within a table"
+
+  Schema:
+    fields: [name, description, owner, database]
+    required: [name]
+    description: "A database schema or namespace"
+
+  Index:
+    fields: [name, type, columns, unique, description]
+    required: [name]
+    description: "A database index (type: btree, hash, gin, gist)"
+
+  View:
+    fields: [name, description, definition, materialized]
+    required: [name]
+    description: "A database view or materialized view"
+
+  StoredProcedure:
+    fields: [name, parameters, return_type, description, language]
+    required: [name]
+    description: "A stored procedure, function, or trigger"
+
+  ForeignKey:
+    fields: [name, source_column, target_table, target_column, on_delete, on_update]
+    required: [name]
+    description: "A foreign key relationship between tables"
+
+edge_types:
+  BELONGS_TO:
+    source: Table
+    target: Schema
+  HAS_COLUMN:
+    source: Table
+    target: Column
+  REFERENCES:
+    source: ForeignKey
+    target: Table
+  INDEXES:
+    source: Index
+    target: Table
+  DEPENDS_ON:
+    source: View
+    target: Table
+  CALLS:
+    source: StoredProcedure
+    target: StoredProcedure
+
+fact_types:
+  - type: Constraint
+    fields: [name, type, table, expression, source_text]
+    description: "A check constraint, unique constraint, or validation rule"
+
+  - type: Migration
+    fields: [version, description, date, changes, source_text]
+    description: "A schema migration or DDL change"
+
+  - type: Performance
+    fields: [table, metric, value, recommendation, source_text]
+    description: "A performance observation or optimization recommendation"

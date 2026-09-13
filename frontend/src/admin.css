@@ -1,0 +1,22 @@
+/* Admin dashboard utility classes — Tailwind @apply for reusable button styles */
+
+.app-root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #1a1b1e;
+}
+
+.admin-btn {
+  @apply flex items-center gap-1.5 px-3 py-1.5 rounded text-sm
+         bg-neo-surface border border-neo-border text-neo-text-muted
+         hover:text-neo-text hover:bg-neo-surface-light
+         transition-colors cursor-pointer;
+}
+
+.admin-btn-primary {
+  @apply flex items-center gap-1.5 px-3 py-1.5 rounded text-sm
+         bg-neo-blue border-none text-white font-medium
+         hover:bg-neo-blue/90 transition-colors cursor-pointer
+         disabled:opacity-50 disabled:cursor-not-allowed;
+}

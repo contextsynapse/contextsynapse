@@ -1,0 +1,48 @@
+# Marketing Content Extraction Schema
+# Used when ingesting marketing briefs, campaign plans, ad copy, and brand documents.
+
+name: marketing_content
+
+node_types:
+  Campaign:
+    fields: [name, type, channel, start_date, end_date, budget, status, objective]
+    required: [name]
+    description: "A marketing campaign or initiative"
+
+  Audience:
+    fields: [name, description, demographics, interests, size, region]
+    required: [name]
+    description: "A target audience or customer segment"
+
+  Metric:
+    fields: [name, value, unit, period, benchmark, goal]
+    required: [name]
+    description: "A marketing performance metric or KPI"
+
+  Brand:
+    fields: [name, industry, tagline, values, voice, colors]
+    required: [name]
+    description: "A brand entity with associated identity attributes"
+
+edge_types:
+  TARGETS:
+    source: Campaign
+    target: Audience
+  MEASURES:
+    source: Campaign
+    target: Metric
+  PROMOTES:
+    source: Campaign
+    target: Brand
+  COMPETES_WITH:
+    source: Brand
+    target: Brand
+
+fact_types:
+  - type: Insight
+    fields: [statement, confidence, source_text]
+    description: "A marketing insight or strategic conclusion"
+
+  - type: PerformanceFact
+    fields: [metric_name, value, unit, period, comparison, source_text]
+    description: "A specific campaign or channel performance data point"

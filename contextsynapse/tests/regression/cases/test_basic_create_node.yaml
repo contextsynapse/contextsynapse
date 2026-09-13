@@ -1,0 +1,20 @@
+id: test_001
+name: Create Node - Basic
+description: Tests basic node creation with properties
+query: 'CREATE NODE TestNode { name: "regression_test", value: 42, active: true }'
+namespace: regression_test
+expected_success: true
+expected_nodes: null
+expected_edges: null
+tags:
+- basic
+- create
+- node
+verify_persistence: true
+test_both_modes: true
+approved_by: system
+notes: Basic node creation test - should always pass
+priority: 1
+prerequisites: []
+requires_data: false
+requires_files: []

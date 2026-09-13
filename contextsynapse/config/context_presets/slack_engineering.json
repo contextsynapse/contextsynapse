@@ -1,0 +1,21 @@
+{
+  "name": "Slack Engineering Channel",
+  "description": "Engineering decisions and incidents from Slack",
+  "context_type": "knowledge_base",
+  "sensitivity": "confidential",
+  "tags": ["internal", "engineering"],
+  "pipeline": {
+    "template_id": "builtin:knowledge-graph",
+    "source_url": "",
+    "max_pages": 0,
+    "schema_id": "meeting_notes",
+    "schema_mode": "schema_plus"
+  },
+  "filters": {
+    "keyword_exclude": ["gif", "meme", "lol"],
+    "keyword_include": ["deploy", "incident", "decision", "architecture"],
+    "semantic_rules": [],
+    "semantic_mode": "or"
+  },
+  "schedule": {"trigger_type": "webhook", "interval_minutes": 0}
+}

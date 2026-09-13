@@ -1,0 +1,54 @@
+id: test_pipeline_008
+name: Pipeline - GPT-4 Semantic Chunking
+description: 'Tests ingestion pipeline with GPT-4 for semantic chunking.
+
+  Higher quality chunking for complex documents.
+
+  Uses GPT-4 for chunking.
+
+  Uses text-embedding-ada-002 for embeddings.
+
+  Processes 25-30 pages.
+
+  '
+query: "CREATE PIPELINE regression_gpt4_pipeline\nIN NAMESPACE tcs_regression_pipeline\n\
+  SOURCE COLLECTION raw_docs\nTARGET COLLECTION knowledge_graph\nDESCRIPTION \"Regression\
+  \ test: GPT-4 semantic chunking (25-30 pages)\"\nCHECKPOINT POLICY enabled\nSTAGES\
+  \ = [\n  STEP extract\n      EXTRACT FROM FILE \"input-doc/annual-report-2024-2025.pdf\"\
+  \n      USING READER \"AUTO\"\n      PARAMETERS (max_pages: 30),\n  \n  STEP chunk\n\
+  \      CHUNK BY semantic\n      USING MODEL \"gpt-4\"\n      PROMPT \"You are a\
+  \ semantic chunking expert. Analyze the text and identify natural topic boundaries.\
+  \ Create chunks that preserve semantic coherence and topic continuity. Each chunk\
+  \ should be a complete thought or concept.\"\n      PARAMETERS (max_tokens: 1000,\
+  \ overlap: 200, similarity_threshold: 0.8)\n      STORE AS NODE TYPE Chunk\n   \
+  \   LINK TO Document ON HAS_CHUNK,\n  \n  STEP embed\n      EMBED USING MODEL \"\
+  text-embedding-ada-002\"\n      PARAMETERS (dimensions: 1536, normalize: true)\n\
+  \      STORE EMBEDDING IN Chunk.embedding,\n  \n  STEP index\n      INDEX USING\
+  \ {bm25: true, vector: true, graph: true}\n]"
+namespace: tcs_regression_pipeline
+expected_success: true
+expected_nodes: 50
+expected_edges: 10
+tags:
+- pipeline
+- ingestion
+- semantic_chunking
+- gpt-4
+- embedding
+verify_persistence: true
+test_both_modes: true
+approved_by: system
+notes: 'Tests CREATE PIPELINE with GPT-4 for chunking.
+
+  Higher quality chunking for complex documents.
+
+  Includes prompt for chunking model.
+
+  Includes explicit embedding model.
+
+  '
+priority: 4
+prerequisites: []
+requires_data: false
+requires_files:
+- input-doc/annual-report-2024-2025.pdf

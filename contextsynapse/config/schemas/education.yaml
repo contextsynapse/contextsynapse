@@ -1,0 +1,42 @@
+name: education
+description: "Education domain — courses, students, instructors, assessments"
+
+node_types:
+  Course:
+    fields: [name, code, level, credits, department, description]
+    required: [name]
+    description: "Course, class, or training program"
+  Student:
+    fields: [name, id, level, major, enrollment_status]
+    required: [name]
+    description: "Student or learner"
+  Instructor:
+    fields: [name, department, title, specialization]
+    required: [name]
+    description: "Teacher, professor, or trainer"
+  Assessment:
+    fields: [name, type, weight, due_date, description]
+    required: [name]
+    description: "Exam, assignment, project, or evaluation"
+  LearningObjective:
+    fields: [description, bloom_level, measurable]
+    required: [description]
+    description: "Learning outcome or competency"
+  Resource:
+    fields: [name, type, url, author, description]
+    required: [name]
+    description: "Textbook, article, video, or learning material"
+
+edge_types:
+  TEACHES:
+    source: Instructor
+    target: Course
+  ENROLLED_IN:
+    source: Student
+    target: Course
+  ASSESSES:
+    source: Assessment
+    target: LearningObjective
+  REQUIRES:
+    source: Course
+    target: Course

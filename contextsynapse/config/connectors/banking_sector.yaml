@@ -1,0 +1,20 @@
+name: banking_sector
+connector_type: stock_price
+target_context_id: sector_banking
+poll_interval_minutes: 5
+active: true
+config:
+  exchange: NSE
+  period: "1d"
+  interval: "1d"
+  symbols:
+    - "HDFCBANK.NS"
+    - "ICICIBANK.NS"
+    - "SBIN.NS"
+    - "KOTAKBANK.NS"
+    - "AXISBANK.NS"
+    - "INDUSINDBK.NS"
+    - "BANDHANBNK.NS"
+    - "FEDERALBNK.NS"
+    - "IDFCFIRSTB.NS"
+    - "PNB.NS"

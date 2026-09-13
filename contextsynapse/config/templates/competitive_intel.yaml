@@ -1,0 +1,39 @@
+name: competitive_intel
+description: "Competitive intelligence — tracks companies, products, and market positioning"
+
+entity_types:
+  - Company
+  - Product
+  - Person
+  - Technology
+
+indicator_types:
+  - MarketShare
+  - HeadCount
+  - FundingRound
+  - PatentCount
+
+signals:
+  - type: sentiment_reversal
+    config:
+      window_hours: 72
+      min_mentions: 3
+
+  - type: co_occurrence
+    config:
+      min_count: 5
+      window_days: 30
+
+correlations:
+  - type: cross_entity
+    config:
+      same_domain: true
+      lag_max_days: 14
+
+schedule: weekly
+
+quality:
+  min_samples: 10
+  min_confidence: 0.6
+  decay_days: 45
+  max_correlations: 500

@@ -1,0 +1,37 @@
+id: test_blockchain_006
+name: Blockchain - Get Merkle Root
+description: 'Tests GET MERKLE ROOT query to get Merkle tree root hash.
+
+  Requires traceability to be enabled.
+
+  '
+query: 'CREATE NODE TestNode { name: "test_node_1" };
+
+  CREATE NODE TestNode { name: "test_node_2" };
+
+  CREATE NODE TestNode { name: "test_node_3" };
+
+
+  GET MERKLE ROOT'
+namespace: blockchain_test
+expected_success: true
+tags:
+- blockchain
+- traceability
+- merkle_root
+verify_persistence: false
+test_both_modes: true
+approved_by: system
+notes: 'Tests GET MERKLE ROOT query.
+
+  Requires traceability to be enabled.
+
+  Should return Merkle tree root hash.
+
+  '
+skip: true
+skip_reason: Traceability layer not enabled in default configuration
+priority: 6
+prerequisites: []
+requires_data: false
+requires_files: []

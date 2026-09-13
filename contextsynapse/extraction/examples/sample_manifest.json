@@ -1,0 +1,53 @@
+{
+  "document_id": "aiql_0001",
+  "generated_at": "2025-02-10T15:10:21Z",
+  "extractor_version": "pdf_v1",
+  "assets": {
+    "pages": [
+      "pages/page_001.txt",
+      "pages/page_002.txt",
+      "pages/page_003.txt"
+    ],
+    "tables": [
+      "tables/tbl_01.csv"
+    ],
+    "images": [
+      "images/img_001.png"
+    ],
+    "audio": [],
+    "video_frames": [],
+    "web": []
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,62 @@
+id: test_pipeline_007
+name: Pipeline - With Relationship Extraction (GPT-3.5)
+description: 'Tests ingestion pipeline with relationship extraction stage.
+
+  Extracts relationships between entities.
+
+  Uses GPT-3.5-Turbo for chunking, entity extraction, and relationship extraction.
+
+  Uses text-embedding-ada-002 for embeddings.
+
+  Processes 25-30 pages.
+
+  '
+query: "CREATE PIPELINE regression_relationship_pipeline\nIN NAMESPACE tcs_regression_pipeline\n\
+  SOURCE COLLECTION raw_docs\nTARGET COLLECTION knowledge_graph\nDESCRIPTION \"Regression\
+  \ test: Pipeline with relationship extraction (GPT-3.5, 25-30 pages)\"\nCHECKPOINT\
+  \ POLICY enabled\nSTAGES = [\n  STEP extract\n      EXTRACT FROM FILE \"input-doc/annual-report-2024-2025.pdf\"\
+  \n      USING READER \"AUTO\"\n      PARAMETERS (max_pages: 30),\n  \n  STEP chunk\n\
+  \      CHUNK BY semantic\n      USING MODEL \"gpt-3.5-turbo\"\n      PROMPT \"Split\
+  \ the following text into semantic chunks preserving meaning. Each chunk should\
+  \ be coherent and self-contained.\"\n      PARAMETERS (max_tokens: 1000, overlap:\
+  \ 100)\n      STORE AS NODE TYPE Chunk\n      LINK TO Document ON HAS_CHUNK,\n \
+  \ \n  STEP extract_entities\n      EXTRACT ENTITIES FROM CHUNKS\n      USING LLM\
+  \ \"gpt-3.5-turbo\"\n      PROMPT \"Extract entities of types: ORGANIZATION, PERSON,\
+  \ LOCATION, FINANCIAL_METRIC, TECHNOLOGY, DATE, MONEY, PERCENT. Return JSON array\
+  \ with name, type, canonical_name, confidence, context.\"\n      STORE AS NODE TYPE\
+  \ Entity\n      LINK TO Chunk ON MENTIONS,\n  \n  STEP extract_relationships\n \
+  \     EXTRACT RELATIONSHIPS FROM CHUNKS\n      USING LLM \"gpt-3.5-turbo\"\n   \
+  \   PROMPT \"Extract relationships between entities. Return JSON array with source_entity,\
+  \ target_entity, relationship_type, confidence.\"\n      STORE AS EDGE TYPE Relationship\n\
+  \      LINK USING entities,\n  \n  STEP embed\n      EMBED USING MODEL \"text-embedding-ada-002\"\
+  \n      PARAMETERS (dimensions: 1536, normalize: true)\n      STORE EMBEDDING IN\
+  \ Chunk.embedding,\n  \n  STEP index\n      INDEX USING {bm25: true, vector: true,\
+  \ graph: true}\n]"
+namespace: tcs_regression_pipeline
+expected_success: true
+expected_nodes: 100
+expected_edges: 30
+tags:
+- pipeline
+- ingestion
+- entity_extraction
+- relationship_extraction
+- gpt-3.5
+- embedding
+verify_persistence: true
+test_both_modes: true
+approved_by: system
+notes: 'Tests CREATE PIPELINE with relationship extraction.
+
+  Includes prompts for chunking, entity extraction, and relationship extraction models.
+
+  Includes explicit embedding model.
+
+  Verifies relationships are extracted and linked between entities.
+
+  '
+priority: 4
+prerequisites: []
+requires_data: false
+requires_files:
+- input-doc/annual-report-2024-2025.pdf
