@@ -18,7 +18,7 @@ Quick start:
     agent = ContextSynapseAgent("my-bot", server="http://localhost:8000")
 """
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __author__ = "ContextSynapse Contributors"
 
 # ── Core (always needed, lightweight) ────────────────────────────
