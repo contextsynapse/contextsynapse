@@ -156,10 +156,11 @@ def _mount_platform_routers(app: FastAPI):
     except Exception:
         pass
 
-    # Roles
+    # Tenant management + blueprints
     try:
-        from contextsynapse.api.workflow_router import router as wf_router
-        # Already mounted above
+        from contextsynapse.api.tenant_router import router as tenant_router
+        app.include_router(tenant_router)
+        logger.info("Tenant router mounted")
     except Exception:
         pass
 
