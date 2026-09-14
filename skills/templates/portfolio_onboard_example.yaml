@@ -1,0 +1,169 @@
+# ═══════════════════════════════════════════════════════════════
+# Portfolio Onboard Template — complete blueprint for wiring a portfolio
+# ═══════════════════════════════════════════════════════════════
+
+name: portfolio_onboard
+version: "1.0"
+context_type: portfolio
+vertical: pms
+
+graph:
+  namespace: "pms_data"
+
+  nodes:
+    - label: Portfolio
+      id: "{portfolio_id}"
+      properties:
+        name: { source: "derived from client + strategy" }
+        strategy: { source: "from client mandate_type" }
+        benchmark: { source: "from client benchmark" }
+        _datasource: "postgresql"
+        _pg_table: "pms_portfolios"
+        _pg_id: "{portfolio_id}"
+        _context_type: "atomic"
+        _visibility: "scoped"
+      storage: graph + postgresql
+
+  edges:
+    - label: MANAGED_BY
+      from: Portfolio
+      to: Client
+      auto: true
+      source: "from client_id"
+
+    - label: BENCHMARKED_TO
+      from: Portfolio
+      to: Index
+      auto: true
+      target_id: "index_{benchmark}"
+
+    - label: HOLDS
+      from: Portfolio
+      to: Stock
+      repeat: true
+      dynamic: true        # edges added/removed as holdings change
+      properties: [stock_symbol, quantity, avg_cost, weight, sector]
+
+    - label: COMPLIES_WITH
+      from: Portfolio
+      to: Rule
+      auto: true
+      source: "from mandate rules"
+      targets: ["sebi_single_stock", "sebi_sector_limit", "cash_reserve"]
+
+storage:
+  postgresql:
+    table: pms_portfolios
+    fields:
+      id: { source: "generated" }
+      client_id: { source: "from client" }
+      name: { source: "derived" }
+      strategy: { source: "from mandate" }
+      benchmark: { source: "from client" }
+      total_value: { source: "computed from holdings", updated: "daily" }
+      cash_balance: { source: "from investment_amount initially" }
+      nav: { default: 100.0, updated: "daily" }
+      max_single_stock_pct: { source: "from client mandate_rules" }
+      max_sector_pct: { source: "from client mandate_rules" }
+      min_cash_pct: { source: "from client mandate_rules" }
+
+  columnar:
+    nav_history:
+      schema: [date, nav, total_value, cash, units]
+      source: "computed daily"
+      frequency: "daily"
+      retention: "5 years"
+      access_pattern: "NAV chart, performance attribution"
+
+    allocation_history:
+      schema: [date, stock_symbol, weight, sector]
+      source: "computed from holdings"
+      frequency: "daily"
+      retention: "3 years"
+      access_pattern: "drift analysis, historical allocation"
+
+    trade_log:
+      schema: [date, stock, action, quantity, price, fees, rationale]
+      source: "from trade execution"
+      frequency: "event-based"
+      retention: "7 years (SEBI requirement)"
+      access_pattern: "trade audit trail"
+
+  document:
+    compliance_snapshot:
+      schema: { date: string, rules_evaluated: int, violations: list, warnings: list }
+      frequency: "daily"
+      store_as: "JSON in graph node (label: ComplianceSnapshot)"
+
+    performance_report:
+      schema: { period: string, return_pct: float, vs_benchmark: float,
+                attribution: dict, top_contributors: list, detractors: list }
+      frequency: "monthly"
+      store_as: "JSON in graph node (label: PerformanceReport)"
+
+  redis:
+    portfolio_summary:
+      key: "portfolio:{portfolio_id}:summary"
+      ttl: 300
+      contains: "total_value, cash, holdings_count, daily_return"
+      access_pattern: "dashboard KPI strip"
+
+pipelines:
+  nav_computation:
+    source: "computed from holdings × latest prices"
+    frequency: "daily (EOD)"
+    stores_to: ["columnar.nav_history", "postgresql.nav"]
+    trigger: "cron 18:00 IST"
+
+  drift_check:
+    source: "computed from current vs target allocation"
+    frequency: "daily"
+    stores_to: ["redis.portfolio_summary"]
+    alert_if: "max_drift > 3%"
+
+  compliance_check:
+    source: "rules engine"
+    frequency: "daily + on_trade"
+    stores_to: ["document.compliance_snapshot"]
+    alert_if: "any violation"
+
+  performance_attribution:
+    source: "computed from NAV + holdings changes"
+    frequency: "monthly"
+    stores_to: ["document.performance_report"]
+
+sensors:
+  drift:
+    source: "drift_check pipeline"
+    signal: "drift_pct"
+    alert_threshold: 3.0
+
+  concentration:
+    source: "computed from holdings"
+    signal: "max_stock_pct, max_sector_pct, top5_pct"
+    alert_threshold: "from mandate_rules"
+
+  nav_change:
+    source: "nav_computation pipeline"
+    signal: "daily_return_pct"
+    alert_threshold: -2.0   # alert if portfolio drops > 2% in a day
+
+  compliance_status:
+    source: "compliance_check pipeline"
+    signal: "pass/warning/violation"
+    alert_on: "violation"
+
+derived:
+  initial_setup:
+    - "Create PG record with mandate rules from client"
+    - "Create graph node with MANAGED_BY edge to client"
+    - "Link COMPLIES_WITH edges to SEBI rules"
+    - "Start drift sensor (daily)"
+    - "Start NAV tracker (daily)"
+    - "Start compliance checker (daily + on_trade)"
+    - "Pre-compute portfolio summary cache (Redis)"
+
+confidence_gate:
+  auto_wire:
+    min_confidence: 1.0     # portfolio setup is deterministic, no LLM research
+    applies_to: [all]       # everything auto-wires (inputs are validated)

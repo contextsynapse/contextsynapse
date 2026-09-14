@@ -1,0 +1,132 @@
+# ═══════════════════════════════════════════════════════════════
+# Client Onboard Template — complete blueprint for wiring a client
+# ═══════════════════════════════════════════════════════════════
+
+name: client_onboard
+version: "1.0"
+context_type: client
+vertical: pms
+
+graph:
+  namespace: "pms_data"
+
+  nodes:
+    - label: Client
+      id: "{client_id}"
+      properties:
+        name: { source: "input", confidence_min: 1.0 }
+        risk_profile: { source: "input", confidence_min: 1.0 }
+        mandate_type: { source: "input", confidence_min: 1.0 }
+        investment_amount: { source: "input", confidence_min: 1.0 }
+        _datasource: "postgresql"
+        _pg_table: "pms_clients"
+        _pg_id: "{client_id}"
+        _context_type: "atomic"
+        _visibility: "scoped"
+      storage: graph + postgresql
+
+  edges:
+    - label: MANAGES
+      from: Client
+      to: Portfolio
+      auto: true          # created when portfolio is created
+
+    - label: AVOIDS
+      from: Client
+      to: SectorConstraint
+      auto: true
+      source: "from constraints list"
+
+    - label: ASSIGNED_TO
+      from: Client
+      to: FundManager
+      research: true
+      source: "agent suggests based on FM expertise + client mandate"
+      confidence_min: 0.6
+      needs_approval: true   # FM assignment always needs CIO approval
+
+    - label: SIMILAR_TO
+      from: Client
+      to: Client
+      research: true
+      source: "graph traversal — same risk profile + overlapping sectors"
+      confidence_min: 0.5
+      auto: true
+
+storage:
+  postgresql:
+    table: pms_clients
+    fields:
+      name: { source: "input", pii: false }
+      email: { source: "input", pii: true, mask: "email", decrypt_roles: ["pms_admin", "cio"] }
+      phone: { source: "input", pii: true, mask: "phone", decrypt_roles: ["pms_admin"] }
+      pan: { source: "input", pii: true, mask: "last4", decrypt_roles: ["pms_admin", "compliance_officer"] }
+      risk_profile: { source: "input" }
+      mandate_type: { source: "input" }
+      investment_amount: { source: "input" }
+      kyc_status: { default: "pending" }
+
+  document:
+    kyc_documents:
+      schema: { type: string, verified: boolean, verified_at: datetime }
+      store_as: "JSONB in pms_clients.kyc_documents"
+
+    meeting_notes:
+      schema: { date: string, attendees: list, discussion: string, action_items: list }
+      store_as: "JSON in graph node (label: MeetingNote)"
+
+  blob:
+    kyc_scans:
+      format: "PDF/JPG"
+      storage: "contextsynapse_data/clients/{client_id}/kyc/"
+
+pipelines:
+  # No data pipelines for client — it's input-driven, not sensor-driven
+  # But there ARE derived sensors:
+
+sensors:
+  aum_trend:
+    source: "computed from portfolio NAV history"
+    frequency: "daily"
+    signal: "growing/stable/declining"
+
+  engagement:
+    source: "computed from login frequency + report views"
+    frequency: "weekly"
+    signal: "active/passive/disengaged"
+
+  payment_behavior:
+    source: "computed from fee payment history"
+    frequency: "monthly"
+    signal: "on_time/late/overdue"
+
+derived:
+  mandate_rules:
+    source: "auto-computed from risk_profile"
+    conservative: { max_single_stock: 20, max_sector: 35, min_cash: 10 }
+    moderate: { max_single_stock: 25, max_sector: 40, min_cash: 5 }
+    aggressive: { max_single_stock: 30, max_sector: 50, min_cash: 3 }
+    ultra_aggressive: { max_single_stock: 35, max_sector: 60, min_cash: 2 }
+
+  suitable_sectors:
+    source: "LLM from mandate_type"
+    confidence_min: 0.6
+    example:
+      large_cap: ["Banking", "IT", "FMCG", "Energy"]
+      sector_focus: ["depends on focus area"]
+
+workflows:
+  kyc_verification:
+    trigger: "on_create"
+    type: "client_onboard"
+    auto_checks: ["pan_format", "duplicate_check"]
+    approvers: ["compliance_officer"]
+
+confidence_gate:
+  auto_wire:
+    min_confidence: 0.8
+    applies_to: [identity, mandate, derived.mandate_rules]
+  needs_approval:
+    applies_to: [edges.ASSIGNED_TO, derived.suitable_sectors]
+    workflow: "client_onboard"
+    approvers: ["cio", "pms_admin"]

@@ -1,0 +1,370 @@
+# ═══════════════════════════════════════════════════════════════
+# Stock Onboard Template — complete blueprint for wiring a stock
+# ═══════════════════════════════════════════════════════════════
+#
+# This template tells the agent:
+#   1. WHAT to research (fields + sources)
+#   2. WHERE to store each piece (polyglot mapping)
+#   3. HOW to connect in graph (nodes + edges)
+#   4. WHAT pipelines to set up (frequency + source)
+#   5. WHAT confidence threshold to auto-wire vs flag for HIL
+#
+# Agent fills this template → confidence gate → platform auto-wires
+
+name: stock_onboard
+version: "1.0"
+context_type: stock
+vertical: pms
+
+# ── GRAPH SCHEMA — what nodes and edges to create ────────────
+
+graph:
+  namespace: "{entity}"    # e.g., "tcs"
+
+  nodes:
+    - label: CompanyIdentity
+      id: "{entity}_identity"
+      properties:
+        name: { research: true, source: "LLM + yfinance", confidence_min: 0.9 }
+        canonical_name: { research: true, source: "LLM" }
+        ticker: { source: "input", confidence_min: 1.0 }
+        isin: { source: "stock_master", confidence_min: 1.0 }
+        sector: { research: true, source: "stock_master + LLM", confidence_min: 0.8 }
+        industry: { research: true, source: "LLM", confidence_min: 0.7 }
+        parent_group: { research: true, source: "LLM", confidence_min: 0.8 }
+        exchange: { source: "input", default: "NSE" }
+        description: { research: true, source: "LLM", confidence_min: 0.7 }
+        revenue_geography: { research: true, source: "LLM", type: "dict", confidence_min: 0.6 }
+        founded_year: { research: true, source: "LLM", confidence_min: 0.6 }
+        headquarters: { research: true, source: "LLM", confidence_min: 0.7 }
+      storage: graph
+      kb_type: entity_identity
+
+    - label: Person
+      repeat: true    # multiple nodes, one per person
+      max: 8
+      research: true
+      source: "LLM"
+      confidence_min: 0.7
+      properties:
+        name: { type: string }
+        role: { type: string }    # CEO, CFO, CTO, etc.
+      storage: graph
+      kb_type: key_person
+
+    - label: Brand
+      repeat: true
+      max: 10
+      research: true
+      source: "LLM"
+      confidence_min: 0.7
+      properties:
+        name: { type: string }
+      storage: graph
+      kb_type: brand
+
+    - label: Keyword
+      repeat: true
+      max: 15
+      research: true
+      source: "LLM + sector_defaults"
+      confidence_min: 0.6
+      properties:
+        name: { type: string }
+      storage: graph
+      kb_type: keyword
+
+    - label: Alias
+      repeat: true
+      max: 8
+      research: true
+      source: "LLM + ticker variations"
+      confidence_min: 0.8
+      properties:
+        name: { type: string }
+      storage: graph
+      kb_type: alias
+
+  edges:
+    - label: KEY_PERSON
+      from: CompanyIdentity
+      to: Person
+      auto: true
+
+    - label: OWNS_BRAND
+      from: CompanyIdentity
+      to: Brand
+      auto: true
+
+    - label: HAS_KEYWORD
+      from: CompanyIdentity
+      to: Keyword
+      auto: true
+
+    - label: ALIAS_OF
+      from: Alias
+      to: CompanyIdentity
+      auto: true
+
+    - label: IN_SECTOR
+      from: CompanyIdentity
+      to: Sector
+      auto: true
+      target_id: "sector_{sector}"
+
+    - label: PART_OF
+      from: CompanyIdentity
+      to: Group
+      research: true
+      source: "LLM"
+      target_id: "group_{parent_group}"
+      confidence_min: 0.8
+
+    - label: PEER_OF
+      from: CompanyIdentity
+      to: CompanyIdentity
+      repeat: true
+      max: 5
+      research: true
+      source: "LLM + same sector in stock_master"
+      confidence_min: 0.8
+
+# ── POLYGLOT STORAGE — where each data type lives ────────────
+
+storage:
+
+  # Columnar (time-series, aggregatable)
+  columnar:
+    price_history:
+      schema: [date, open, high, low, close, volume]
+      source: yfinance
+      frequency: "30min"
+      retention: "2 years"
+      access_pattern: "time-series charts, SMA, Bollinger"
+
+    technical_indicators:
+      schema: [date, rsi, macd, macd_signal, sma_20, sma_50, bollinger_upper, bollinger_lower, volume_ratio]
+      source: "computed from price_history"
+      frequency: "1hr"
+      retention: "1 year"
+      access_pattern: "technical analysis, signal detection"
+
+    institutional_flow:
+      schema: [date, fii_net, dii_net, mf_net]
+      source: "NSDL + AMFI"
+      frequency: "monthly"
+      retention: "3 years"
+      access_pattern: "institutional accumulation/distribution pattern"
+
+  # Document (semi-structured, variable schema)
+  document:
+    earnings_report:
+      schema: { quarter: string, revenue: number, profit: number, eps: number,
+                guidance: string, management_commentary: string, transcript_summary: string }
+      source: "BSE filings"
+      frequency: "quarterly"
+      access_pattern: "full earnings context for analysis"
+      store_as: "JSON in graph node (label: EarningsReport)"
+
+    analyst_notes:
+      schema: { date: string, analyst: string, target_price: number, rating: string,
+                summary: string, key_points: list }
+      source: "RSS + LLM extraction"
+      frequency: "event-based"
+      access_pattern: "research context"
+      store_as: "JSON in graph node (label: AnalystNote)"
+
+    news_article:
+      schema: { date: string, headline: string, source: string, sentiment: float,
+                relevance_score: float, summary: string }
+      source: "RSS feeds (sector-specific)"
+      frequency: "30min"
+      access_pattern: "news sentiment, entity matching"
+      store_as: "JSON in graph node (label: NewsSignal)"
+
+  # Vector (embeddings for search + dedup)
+  vector:
+    news_embeddings:
+      model: "nomic-embed-text"
+      dimension: 768
+      source: "news_article.headline + summary"
+      purpose: "dedup + similarity search"
+      store: "qdrant collection: {entity}_news"
+
+    report_embeddings:
+      model: "nomic-embed-text"
+      dimension: 768
+      source: "earnings_report.transcript_summary + analyst_notes.summary"
+      purpose: "semantic search across reports"
+      store: "qdrant collection: {entity}_reports"
+
+  # Redis (fast ephemeral, TTL-based)
+  redis:
+    fusion_cache:
+      key: "fusion:{entity}:7"
+      ttl: 600
+      source: "sensor fusion engine"
+      access_pattern: "instant fusion score lookup"
+
+    latest_price:
+      key: "price:{entity}:latest"
+      ttl: 60
+      source: "yfinance"
+      access_pattern: "current price for UI"
+
+    sensor_readings:
+      key: "sensor:{entity}:{sensor_name}"
+      ttl: 3600
+      source: "sensor pipelines"
+      access_pattern: "current sensor value"
+
+  # PostgreSQL (structured, indexed, auditable)
+  postgresql:
+    table: stock_master
+    fields:
+      symbol: { source: "input" }
+      company_name: { source: "research" }
+      display_name: { source: "research" }
+      sector: { source: "research" }
+      industry: { source: "research" }
+      isin: { source: "stock_master" }
+      market_cap_category: { source: "yfinance" }
+      metadata: { source: "research", type: "JSONB", contains: "people, brands, keywords" }
+
+  # Blob (binary files)
+  blob:
+    annual_report:
+      format: "PDF"
+      source: "company IR website"
+      frequency: "annual"
+      storage: "contextsynapse_data/reports/{entity}/"
+
+    earnings_presentation:
+      format: "PDF"
+      source: "BSE filings"
+      frequency: "quarterly"
+      storage: "contextsynapse_data/reports/{entity}/"
+
+# ── DATA PIPELINES — what to set up and how often ────────────
+
+pipelines:
+
+  price_feed:
+    source: "yfinance"
+    ticker: "{ticker}"
+    frequency: "30min"
+    reliability: "high"
+    auth: "none"
+    stores_to: ["columnar.price_history", "redis.latest_price"]
+
+  news_rss:
+    source: "rss"
+    feeds: "auto-detect by sector"
+    frequency: "30min"
+    reliability: "medium"
+    auth: "none"
+    stores_to: ["document.news_article", "vector.news_embeddings"]
+    filter: "entity KB matching (people, brands, keywords)"
+
+  technical_indicators:
+    source: "computed"
+    from: "columnar.price_history"
+    frequency: "1hr"
+    stores_to: ["columnar.technical_indicators", "redis.sensor_readings"]
+
+  fundamental_data:
+    source: "yfinance"
+    frequency: "daily"
+    reliability: "medium"
+    stores_to: ["postgresql.metadata"]
+
+  institutional_holdings:
+    source: "NSDL + AMFI"
+    frequency: "monthly"
+    reliability: "high"
+    auth: "none"
+    stores_to: ["columnar.institutional_flow"]
+
+  fusion:
+    source: "computed"
+    from: "all sensors"
+    frequency: "30min"
+    stores_to: ["redis.fusion_cache"]
+
+# ── SENSORS — what signals to track ──────────────────────────
+
+sensors:
+  price_action:
+    components: [rsi, macd, bollinger, sma_crossover, volume_anomaly]
+    weight: 0.25
+    from: "columnar.technical_indicators"
+
+  fundamentals:
+    components: [pe_ratio, earnings_growth, roe, debt_ratio]
+    weight: 0.20
+    from: "postgresql.metadata + document.earnings_report"
+
+  institutional:
+    components: [fii_flow, dii_flow, mf_holdings_change]
+    weight: 0.15
+    from: "columnar.institutional_flow"
+
+  news_sentiment:
+    components: [headline_sentiment, volume_of_mentions, source_quality]
+    weight: 0.20
+    from: "document.news_article"
+
+  macro:
+    components: [sector_rotation, policy_impact, currency_effect]
+    weight: 0.10
+    from: "graph edges to macro contexts"
+
+  behavioral:
+    components: [market_cycle_state, fear_greed, contrarian_signal]
+    weight: 0.10
+    from: "computed from all other sensors"
+
+# ── CONFIDENCE GATE — what auto-wires vs needs approval ──────
+
+confidence_gate:
+  auto_wire:
+    min_confidence: 0.8
+    applies_to: [identity, corporate, data_sources]
+
+  flag_for_review:
+    confidence_range: [0.5, 0.8]
+    applies_to: [market.peers, optional.risks, optional.keywords]
+
+  needs_approval:
+    below: 0.5
+    or: "off_template"
+    workflow: "stock_onboard_approval"
+    approvers: ["cio", "pms_admin"]
+
+# ── EXAMPLE OUTPUT — what the agent produces for TCS ─────────
+
+example:
+  entity: tcs
+  ticker: TCS.NS
+  agent_output:
+    identity:
+      company_name: { value: "Tata Consultancy Services Limited", confidence: 0.99 }
+      sector: { value: "IT Services", confidence: 0.95 }
+      parent_group: { value: "Tata Group", confidence: 0.98 }
+      revenue_geography: { value: { US: 52, Europe: 16, UK: 14, India: 7, Others: 11 }, confidence: 0.75 }
+    corporate:
+      ceo: { value: "K Krithivasan", confidence: 0.95 }
+      cfo: { value: "Samir Seksaria", confidence: 0.90 }
+      key_people: { value: ["N Chandrasekaran (Chairman)", "Rajesh Gopinathan (Former CEO)"], confidence: 0.85 }
+    market:
+      peers: { value: ["INFY", "WIPRO", "HCLTECH", "TECHM", "LTIM"], confidence: 0.95 }
+      key_brands: { value: ["TCS iON", "TCS BaNCS", "ignio"], confidence: 0.80 }
+    data_sources:
+      price: { provider: "yfinance", ticker: "TCS.NS", frequency: "30min", confidence: 1.0 }
+      news: { provider: "rss", feeds: ["economictimes.com/tech", "moneycontrol.com/it"], confidence: 0.85 }
+    off_template:
+      - { finding: "TCS largest deal pipeline ever — $12.2B TCV", confidence: 0.65, needs_approval: true }
+      - { finding: "TCS exploring AI-first strategy for FY27", confidence: 0.55, needs_approval: true }
+    overall_confidence: 0.89
+    auto_wired: 14
+    flagged: 2
