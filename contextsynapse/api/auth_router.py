@@ -20,14 +20,13 @@ PATCH /auth/users/{user_id}/scope — Update scoped_ids for a user's role
 from __future__ import annotations
 
 import logging
-from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 
 from .auth import UserAuth, create_jwt
-from .users import UserRegistry
 from .tenants import TenantRegistry
+from .users import UserRegistry
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +44,7 @@ def _get_identity_service():
     if _identity_service is None:
         try:
             from contextsynapse.security.identity import IdentityService
+
             _identity_service = IdentityService()
         except Exception as exc:
             logger.warning("IdentityService unavailable: %s", exc)
@@ -58,6 +58,7 @@ def _get_identity_service():
 # ---------------------------------------------------------------------------
 # Request / Response models
 # ---------------------------------------------------------------------------
+
 
 class SignupRequest(BaseModel):
     email: str = Field(..., description="User email address")
@@ -75,8 +76,8 @@ class LoginRequest(BaseModel):
 
 
 class UpdateProfileRequest(BaseModel):
-    display_name: Optional[str] = None
-    password: Optional[str] = None
+    display_name: str | None = None
+    password: str | None = None
 
 
 class AuthResponse(BaseModel):
@@ -89,7 +90,9 @@ class AssignRoleRequest(BaseModel):
     user_id: str = Field(..., description="Target user ID")
     vertical: str = Field(..., description="Vertical slug (pms, mf, platform)")
     role: str = Field(..., description="Role name to assign")
-    scoped_ids: Optional[List[str]] = Field(None, description="Optional list of scoped entity IDs (portfolio_ids, scheme_ids, etc.)")
+    scoped_ids: list[str] | None = Field(
+        None, description="Optional list of scoped entity IDs (portfolio_ids, scheme_ids, etc.)"
+    )
 
 
 class RevokeRoleRequest(BaseModel):
@@ -101,26 +104,26 @@ class RevokeRoleRequest(BaseModel):
 class UpdateScopeRequest(BaseModel):
     vertical: str = Field(..., description="Vertical slug (pms, mf, platform)")
     role: str = Field(..., description="Role name whose scope to update")
-    scoped_ids: List[str] = Field(..., description="New list of scoped entity IDs")
+    scoped_ids: list[str] = Field(..., description="New list of scoped entity IDs")
 
 
 class UpdateProfileSettingsRequest(BaseModel):
-    display_name: Optional[str] = None
-    title: Optional[str] = None
-    bio: Optional[str] = None
-    phone: Optional[str] = None
-    linkedin_url: Optional[str] = None
-    sebi_registration_no: Optional[str] = None
-    arn_number: Optional[str] = None
-    nism_certification: Optional[str] = None
-    experience_years: Optional[int] = None
-    specialization: Optional[str] = None
-    investment_philosophy: Optional[str] = None
-    preferred_sectors: Optional[List[str]] = None
-    risk_appetite: Optional[str] = None
-    benchmark: Optional[str] = None
-    notification_preferences: Optional[dict] = None
-    timezone: Optional[str] = None
+    display_name: str | None = None
+    title: str | None = None
+    bio: str | None = None
+    phone: str | None = None
+    linkedin_url: str | None = None
+    sebi_registration_no: str | None = None
+    arn_number: str | None = None
+    nism_certification: str | None = None
+    experience_years: int | None = None
+    specialization: str | None = None
+    investment_philosophy: str | None = None
+    preferred_sectors: list[str] | None = None
+    risk_appetite: str | None = None
+    benchmark: str | None = None
+    notification_preferences: dict | None = None
+    timezone: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -136,6 +139,7 @@ def _get_profile_store():
     if _profile_store is None:
         try:
             from contextsynapse.db.profile import ProfileStore
+
             _profile_store = ProfileStore()
         except Exception as exc:
             logger.warning("ProfileStore unavailable: %s", exc)
@@ -150,6 +154,7 @@ def _get_profile_store():
 # Router factory
 # ---------------------------------------------------------------------------
 
+
 def create_auth_router(
     user_registry: UserRegistry,
     tenant_registry: TenantRegistry,
@@ -159,8 +164,20 @@ def create_auth_router(
     router = APIRouter(prefix="/auth", tags=["auth"])
     user_auth = UserAuth(user_registry)
 
-    def _make_token(user) -> str:
-        return create_jwt({"type": "user", "sub": user.user_id, "email": user.email})
+    def _make_token(user, role: str = "fund_manager") -> str:
+        return create_jwt({"type": "user", "sub": user.user_id, "email": user.email, "role": role})
+
+    def _make_token_pair(user) -> tuple:
+        """Create access + refresh token pair."""
+        try:
+            from contextsynapse.security.jwt_refresh import create_token_pair
+            # Include role in JWT claims so pms_auth can extract it
+            jwt_role = role_data.get("role", "fund_manager") if role_data else "fund_manager"
+            return create_token_pair(user.user_id, {
+                "email": user.email, "type": "user", "role": jwt_role,
+            })
+        except Exception:
+            return _make_token(user), ""
 
     # ------------------------------------------------------------------
     # Helper: assert caller is owner or admin on a tenant
@@ -257,16 +274,81 @@ def create_auth_router(
         tenant_id = user_registry.get_primary_tenant_id(user.user_id)
         tenant = tenant_registry.get(tenant_id) if tenant_id else None
 
-        token = _make_token(user)
+        # Fetch roles from user_roles table (multi-role support)
+        role_data = {}
+        try:
+            from contextsynapse.db.postgres import execute as db_execute
+
+            role_rows = db_execute(
+                "SELECT role, vertical, scoped_ids FROM user_roles WHERE user_id = %s",
+                (user.user_id,),
+            )
+            if role_rows:
+                from contextsynapse.security.rbac import RBACManager
+
+                rbac = RBACManager()
+                all_roles = [r["role"] for r in role_rows]
+                # Merge scoped_ids from all role entries
+                all_scoped = []
+                for r in role_rows:
+                    ids = r.get("scoped_ids") or []
+                    if isinstance(ids, list):
+                        all_scoped.extend(ids)
+                # Get delegated client IDs
+                delegated_ids = []
+                try:
+                    from contextsynapse.workflow.delegation import DelegationManager
+
+                    delegated_ids = DelegationManager().get_delegated_client_ids(user.user_id)
+                except Exception:
+                    pass
+                # Merge permissions from all roles
+                merged_perms = rbac.get_effective_permissions(all_roles)
+                role_data = {
+                    "role": all_roles[0],  # primary role (backward compat)
+                    "roles": all_roles,  # all roles
+                    "vertical": role_rows[0].get("vertical", "pms"),
+                    "scoped_ids": list(set(all_scoped)),
+                    "delegated_ids": delegated_ids,
+                    "permissions": sorted(p.value for p in merged_perms),
+                    "is_multi_role": len(all_roles) > 1,
+                }
+        except Exception:
+            pass
+
+        access_token, refresh_token = _make_token_pair(user)
         return AuthResponse(
-            token=token,
+            token=access_token,
             user={
                 **user.to_dict(),
+                "refresh_token": refresh_token,
                 "tenant_id": tenant_id or "",
                 "tenant_name": tenant.name if tenant else "",
+                **role_data,
             },
             tenant_id=tenant_id or "",
         )
+
+    # ------------------------------------------------------------------
+    # POST /auth/refresh — get new access token from refresh token
+    # ------------------------------------------------------------------
+    @router.post("/refresh")
+    async def refresh_token(request: Request):
+        """Exchange a refresh token for a new access token."""
+        body = await request.json()
+        rt = body.get("refresh_token", "")
+        if not rt:
+            raise HTTPException(400, "refresh_token required")
+        try:
+            from contextsynapse.security.jwt_refresh import refresh_access_token
+            new_token = refresh_access_token(rt)
+            if not new_token:
+                raise HTTPException(401, "Invalid or expired refresh token")
+            return {"token": new_token}
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(401, str(e))
 
     # ------------------------------------------------------------------
     # GET /auth/me
@@ -279,12 +361,14 @@ def create_auth_router(
         for m in memberships:
             t = tenant_registry.get(m.tenant_id)
             if t:
-                tenants.append({
-                    "tenant_id": t.tenant_id,
-                    "name": t.name,
-                    "role": m.role,
-                    "status": t.status,
-                })
+                tenants.append(
+                    {
+                        "tenant_id": t.tenant_id,
+                        "name": t.name,
+                        "role": m.role,
+                        "status": t.status,
+                    }
+                )
 
         return {
             **user.to_dict(),
@@ -338,7 +422,12 @@ def create_auth_router(
     async def password_requirements():
         """Return current password requirements (varies by env)."""
         import os
-        is_dev = os.environ.get("CONTEXTSYNAPSE_ENV") or os.environ.get("AICONTEXTDB_ENV", "").lower() in ("dev", "development", "test")
+
+        is_dev = os.environ.get("CONTEXTSYNAPSE_ENV") or os.environ.get("AICONTEXTDB_ENV", "").lower() in (
+            "dev",
+            "development",
+            "test",
+        )
         return {
             "min_length": 6 if is_dev else 8,
             "require_uppercase": not is_dev,

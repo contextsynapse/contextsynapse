@@ -164,10 +164,47 @@ def _mount_platform_routers(app: FastAPI):
     except Exception:
         pass
 
-    # Health
+    # Health + stubs for platform endpoints that PMS pages poll
     @app.get("/health")
     async def health():
         return {"status": "ok"}
+
+    @app.get("/dashboard/jobs")
+    async def dashboard_jobs():
+        from contextsynapse.api.events import event_bus
+        return {"jobs": [e for e in event_bus.recent(20) if e.get("type", "").startswith("job_")]}
+
+    @app.get("/events/recent")
+    async def events_recent():
+        from contextsynapse.api.events import event_bus
+        return {"events": event_bus.recent(20)}
+
+    @app.get("/events/stream")
+    async def event_stream():
+        """SSE — real-time event stream. Replace polling with this."""
+        import asyncio
+        import json as _json
+        from starlette.responses import StreamingResponse
+        from contextsynapse.api.events import event_bus
+
+        queue = event_bus.subscribe()
+        NL = "\n"
+
+        async def generate():
+            try:
+                while True:
+                    try:
+                        event = await asyncio.wait_for(queue.get(), timeout=30)
+                        yield "data: " + _json.dumps(event, default=str) + NL + NL
+                    except asyncio.TimeoutError:
+                        yield "data: " + _json.dumps({"type": "heartbeat"}) + NL + NL
+            except asyncio.CancelledError:
+                pass
+            finally:
+                event_bus.unsubscribe(queue)
+
+        return StreamingResponse(generate(), media_type="text/event-stream",
+                                  headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
     @app.get("/ready")
     async def ready():
