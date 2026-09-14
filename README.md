@@ -29,11 +29,95 @@ ContextSynapse is the **shared brain** for your AI agents. It stores knowledge a
 - **Shared agent memory** — Agents remember, recall, and share knowledge across sessions
 - **Graph RAG** — Retrieve context via keyword, BM25, and vector fusion — relationships that vector-only RAG misses
 - **AIQL query language** — SQL-like syntax with graph patterns, traversals, and hybrid search
-- **Context assembly** — ContextHub builds LLM-ready messages from graph data
+- **Context assembly** — Polyglot data pull + access control + fusion output in one call
 - **MCP server** — Expose your brain as tools for Claude, Copilot, and other AI agents
-- **AgentShield** — Trust scoring, adaptive permissions, PII detection, audit trails
-- **Plugin system** — Build domain-specific verticals on top of the context engine
+- **Security** — Field-level PII encryption, RBAC framework, audit middleware, JWT refresh, CSRF, rate limiting
+- **Workflow engine** — Approval workflows with auto-checks, delegation, expiry
+- **App factory** — Build domain-specific apps (verticals) on top of the platform
+- **Skills framework** — Markdown-defined agent capabilities with LangGraph execution
 - **Any LLM, any framework** — Works with LangChain, CrewAI, AutoGen, OpenAI, Anthropic, and 8+ more
+
+---
+
+## Build Your Own Vertical
+
+ContextSynapse is a **platform** — like Salesforce or Oracle. You build **verticals** (applications) on top of it.
+
+```python
+# my_app.py — your vertical application
+from contextsynapse.app_factory import create_app
+from contextsynapse.security.rbac_framework import get_role_registry
+from contextsynapse.security.field_encryption import get_field_encryptor
+from contextsynapse.workflow.registry import get_workflow_registry
+
+# 1. Register your roles
+reg = get_role_registry()
+reg.register_vertical("healthcare", {
+    "doctor": {
+        "permissions": ["view_patient", "write_notes", "order_tests"],
+        "label": "Doctor",
+        "global_access": False,
+    },
+    "nurse": {
+        "permissions": ["view_patient", "write_vitals"],
+        "label": "Nurse",
+        "global_access": False,
+    },
+    "admin": {
+        "permissions": ["view_patient", "manage_users", "view_audit"],
+        "label": "Clinic Admin",
+        "global_access": True,
+    },
+})
+
+# 2. Register PII fields
+enc = get_field_encryptor()
+enc.register("patients", {
+    "ssn":   {"mask": "last4", "decrypt_roles": ["admin"]},
+    "phone": {"mask": "phone", "decrypt_roles": ["admin", "doctor"]},
+})
+
+# 3. Register workflows
+get_workflow_registry().register("lab_order", {
+    "label": "Lab Order",
+    "approvers": ["doctor"],
+    "auto_approve_below": 0,
+    "timeout_hours": 24,
+    "vertical": "healthcare",
+})
+
+# 4. Create your app
+from fastapi import APIRouter
+my_router = APIRouter()
+
+@my_router.get("/patients")
+def list_patients():
+    return {"patients": []}
+
+app = create_app(
+    title="HealthCare App",
+    verticals={
+        "healthcare": {
+            "register": lambda: None,  # registration done above
+            "routers": [my_router],
+        },
+    },
+)
+
+# Run: uvicorn my_app:app
+```
+
+**What the platform gives you for free:**
+- Authentication (JWT + refresh tokens)
+- RBAC (your roles, your permissions)
+- PII encryption (your fields, your masking rules)
+- Audit log (every API call logged)
+- Workflow approvals (your workflow types)
+- Context assembly (polyglot data pull with access control)
+- Graph database (CSR + Redis + PostgreSQL)
+- LLM client (10+ providers auto-detected)
+- MCP server (expose tools to AI agents)
+- Skills framework (markdown-defined agent capabilities)
 
 ---
 
@@ -330,33 +414,91 @@ llm = get_llm_client(provider="groq")
 
 ## Security
 
-ContextSynapse includes enterprise-grade security out of the box:
+Enterprise-grade security — all configurable, all platform-level.
 
-| Layer | What it does |
-|-------|-------------|
-| **RBAC** | Role-based access control — Admin, Manager, Analyst, Viewer, custom roles |
-| **Row-Level Security** | Tenant-isolated queries — each tenant sees only their data |
-| **AgentShield** | Continuous behavioral auth for AI agents — trust scoring, anomaly detection, adaptive permissions |
-| **PII Detection** | Auto-detect and redact PII (emails, phones, SSNs) before storage |
-| **Field Encryption** | Scoped AES encryption — encrypt specific fields per tenant/scope |
-| **Audit Trail** | Every read/write logged with who, what, when, from where |
-| **JWT Auth** | JWT-based authentication with tenant, role, and scope claims |
-| **Context ACL** | Fine-grained path-based access control on assembled contexts |
-| **Auto-Tagger** | Classify sensitivity level of ingested content automatically |
-| **Security Middleware** | Agent clearance levels, request validation, rate limiting |
+| Layer | Module | What it does |
+|-------|--------|-------------|
+| **RBAC Framework** | `rbac_framework.py` | Verticals register their own roles + permissions. Multi-role support. |
+| **Field Encryption** | `field_encryption.py` | Fernet AES encryption per field. Role-based decryption + masking. |
+| **Audit Middleware** | `audit_middleware.py` | Every POST/PUT/DELETE logged to PostgreSQL with user, IP, timing. |
+| **JWT Refresh** | `jwt_refresh.py` | 15-min access token + 7-day refresh token. |
+| **CSRF Protection** | `csrf.py` | Double-submit cookie pattern (enable via env). |
+| **Per-User Rate Limit** | `rate_limit.py` | Rate limit by JWT user_id, fallback to IP. |
+| **Error Monitoring** | `error_monitor.py` | Sentry integration (optional) + file logging. |
+| **PII Detection** | `pii.py` | Auto-detect and redact PII (emails, phones, SSNs) in text. |
+| **Context ACL** | `acl.py` | Path-based access control on assembled contexts. |
+| **Row-Level Security** | `rls.py` | Tenant-isolated queries. |
 
 ```python
-from contextsynapse.security import DataSecurity, PIIDetector
+# Field-level PII encryption (vertical configures, platform encrypts)
+from contextsynapse.security.field_encryption import get_field_encryptor
 
-# Detect PII in text
-pii = PIIDetector()
-result = pii.scan("Contact john@example.com or call 555-0123")
-# → [PIIMatch(type=EMAIL, value="john@example.com"), PIIMatch(type=PHONE, value="555-0123")]
+enc = get_field_encryptor()
+enc.register("patients", {
+    "ssn":   {"mask": "last4", "decrypt_roles": ["admin"]},
+    "phone": {"mask": "phone", "decrypt_roles": ["admin", "doctor"]},
+})
 
-# Enforce RBAC
-from contextsynapse.security.rbac import RBACManager
-rbac = RBACManager()
-rbac.check_permission(user_role="analyst", action="read", resource="graph:company")
+record = {"name": "Alice", "ssn": "123-45-6789", "phone": "+1-555-0123"}
+admin_view = enc.process_record(record, "patients", user_roles=["admin"])
+# → {"name": "Alice", "ssn": "123-45-6789", "phone": "+1-555-0123"}
+nurse_view = enc.process_record(record, "patients", user_roles=["nurse"])
+# → {"name": "Alice", "ssn": "XXXXX6789", "phone": "XXXXXXX0123"}
+
+# Generic RBAC (verticals register their own roles)
+from contextsynapse.security.rbac_framework import get_role_registry
+
+reg = get_role_registry()
+reg.register_vertical("myapp", {
+    "editor": {"permissions": ["read", "write"], "global_access": False},
+    "viewer": {"permissions": ["read"], "global_access": False},
+})
+perms = reg.effective_permissions(["editor", "viewer"])  # → {"read", "write"}
+```
+
+## Workflow Engine
+
+Generic approval workflow — verticals register their own workflow types.
+
+```python
+from contextsynapse.workflow.registry import get_workflow_registry
+from contextsynapse.workflow.engine import WorkflowEngine
+
+# Register workflow types
+get_workflow_registry().register("approval", {
+    "label": "Document Approval",
+    "approvers": ["manager"],
+    "auto_approve_below": 0,
+    "timeout_hours": 48,
+    "vertical": "myapp",
+})
+
+# Initiate a workflow
+engine = WorkflowEngine()
+task = engine.initiate("approval", initiated_by="user_123", payload={"doc": "report.pdf"})
+# → status: "pending_approval"
+
+# Approve
+engine.approve(task["id"], approved_by="manager_456")
+# → status: "approved"
+```
+
+## Context Assembly
+
+Assemble composite contexts from polyglot stores with access control.
+
+```python
+from contextsynapse.context.assembly import ContextAssemblyEngine
+
+engine = ContextAssemblyEngine(graph_registry)
+result = engine.assemble(
+    purpose="trade_decision",
+    requester={"user_id": "fm_123", "roles": ["fund_manager"], "scoped_ids": ["client_abc"]},
+    params={"stock": "TCS", "client_id": "client_abc", "portfolio_id": "pf_xyz"},
+)
+# → contexts: {stock, client, portfolio, sector, rules}
+# → redacted: [] (FM has access to all via scoped_ids)
+# → fusion: {decision: "BUY", score: 0.45}
 ```
 
 ---
