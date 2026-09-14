@@ -24,7 +24,7 @@ import logging
 import re
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -35,28 +35,29 @@ class PIIType(str, Enum):
     SSN = "ssn"
     CREDIT_CARD = "credit_card"
     IP_ADDRESS = "ip_address"
-    AADHAAR = "aadhaar"          # Indian national ID
-    PAN = "pan"                  # Indian tax ID
+    AADHAAR = "aadhaar"  # Indian national ID
+    PAN = "pan"  # Indian tax ID
     PASSPORT = "passport"
     DATE_OF_BIRTH = "dob"
 
 
 class RedactionMode(str, Enum):
-    REDACT = "redact"     # Remove entirely: "[REDACTED]"
-    MASK = "mask"         # Partial mask: "j***@example.com"
-    HASH = "hash"         # One-way hash: "[SHA:a1b2c3]"
-    ALLOW = "allow"       # Pass through (no redaction)
+    REDACT = "redact"  # Remove entirely: "[REDACTED]"
+    MASK = "mask"  # Partial mask: "j***@example.com"
+    HASH = "hash"  # One-way hash: "[SHA:a1b2c3]"
+    ALLOW = "allow"  # Pass through (no redaction)
 
 
 @dataclass
 class PIIScanResult:
     """Result of scanning text for PII."""
+
     pii_found: bool = False
-    entities: List[Tuple[str, str]] = field(default_factory=list)  # (value, type)
+    entities: list[tuple[str, str]] = field(default_factory=list)  # (value, type)
     sensitivity: str = "public"  # auto-classified based on PII found
     entity_count: int = 0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "pii_found": self.pii_found,
             "entity_count": self.entity_count,
@@ -67,27 +68,13 @@ class PIIScanResult:
 
 # Regex patterns for PII detection
 _PATTERNS = {
-    PIIType.EMAIL: re.compile(
-        r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-    ),
-    PIIType.PHONE: re.compile(
-        r'(?:\+?\d{1,3}[-.\s]?)?\(?\d{2,4}\)?[-.\s]?\d{3,4}[-.\s]?\d{3,4}\b'
-    ),
-    PIIType.SSN: re.compile(
-        r'\b\d{3}-\d{2}-\d{4}\b'
-    ),
-    PIIType.CREDIT_CARD: re.compile(
-        r'\b(?:\d{4}[-\s]?){3}\d{4}\b'
-    ),
-    PIIType.IP_ADDRESS: re.compile(
-        r'\b(?:\d{1,3}\.){3}\d{1,3}\b'
-    ),
-    PIIType.AADHAAR: re.compile(
-        r'\b\d{4}\s?\d{4}\s?\d{4}\b'
-    ),
-    PIIType.PAN: re.compile(
-        r'\b[A-Z]{5}\d{4}[A-Z]\b'
-    ),
+    PIIType.EMAIL: re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"),
+    PIIType.PHONE: re.compile(r"(?:\+?\d{1,3}[-.\s]?)?\(?\d{2,4}\)?[-.\s]?\d{3,4}[-.\s]?\d{3,4}\b"),
+    PIIType.SSN: re.compile(r"\b\d{3}-\d{2}-\d{4}\b"),
+    PIIType.CREDIT_CARD: re.compile(r"\b(?:\d{4}[-\s]?){3}\d{4}\b"),
+    PIIType.IP_ADDRESS: re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b"),
+    PIIType.AADHAAR: re.compile(r"\b\d{4}\s?\d{4}\s?\d{4}\b"),
+    PIIType.PAN: re.compile(r"\b[A-Z]{5}\d{4}[A-Z]\b"),
 }
 
 # Redaction templates
@@ -107,7 +94,7 @@ _REDACT_LABELS = {
 class PIIDetector:
     """Detect and redact PII in text content."""
 
-    def __init__(self, custom_patterns: Optional[Dict[str, re.Pattern]] = None):
+    def __init__(self, custom_patterns: dict[str, re.Pattern] | None = None):
         self._patterns = dict(_PATTERNS)
         if custom_patterns:
             self._patterns.update(custom_patterns)
@@ -178,16 +165,15 @@ class PIIDetector:
 
         return result
 
-    def mask_node_properties(self, properties: Dict[str, Any],
-                              mode: RedactionMode = RedactionMode.MASK,
-                              fields: Optional[List[str]] = None) -> Dict[str, Any]:
+    def mask_node_properties(
+        self, properties: dict[str, Any], mode: RedactionMode = RedactionMode.MASK, fields: list[str] | None = None
+    ) -> dict[str, Any]:
         """Mask PII in specific node properties.
 
         Args:
             fields: Property names to scan. Default: content, description, name, statement.
         """
-        target_fields = fields or ["content", "description", "name", "statement",
-                                    "title", "body", "text", "summary"]
+        target_fields = fields or ["content", "description", "name", "statement", "title", "body", "text", "summary"]
         masked = dict(properties)
         for field_name in target_fields:
             if field_name in masked and isinstance(masked[field_name], str):
@@ -205,7 +191,7 @@ class PIIDetector:
                 return f"{masked}@{parts[1]}"
 
         if pii_type == PIIType.PHONE:
-            digits = re.sub(r'\D', '', value)
+            digits = re.sub(r"\D", "", value)
             if len(digits) >= 4:
                 return "***-***-" + digits[-4:]
 
@@ -213,7 +199,7 @@ class PIIDetector:
             return "***-" + value[-4:]
 
         if pii_type == PIIType.AADHAAR:
-            digits = re.sub(r'\D', '', value)
+            digits = re.sub(r"\D", "", value)
             return "XXXX-XXXX-" + digits[-4:]
 
         # Default: show first and last 2 chars
@@ -223,7 +209,7 @@ class PIIDetector:
 
 
 # Global singleton
-_detector: Optional[PIIDetector] = None
+_detector: PIIDetector | None = None
 
 
 def get_pii_detector() -> PIIDetector:

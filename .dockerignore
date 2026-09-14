@@ -1,0 +1,48 @@
+# Git
+.git
+.gitignore
+
+# Dev files
+.env
+.env.local
+*.pyc
+__pycache__
+*.egg-info
+.pytest_cache
+.mypy_cache
+.ruff_cache
+
+# Node
+frontend/node_modules
+frontend/.env.local
+
+# Data (mount as volumes in production)
+contextsynapse_data/
+contextcore_data/
+*.db
+*.sqlite
+
+# Archives and old code
+archive/
+private/
+contextcore/
+
+# Docs
+docs/
+*.md
+!README.md
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tests
+tests/
+htmlcov/
+.coverage
