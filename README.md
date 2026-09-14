@@ -485,20 +485,30 @@ engine.approve(task["id"], approved_by="manager_456")
 
 ## Context Assembly
 
-Assemble composite contexts from polyglot stores with access control.
+Assemble composite contexts from polyglot stores with role-based access control.
 
 ```python
 from contextsynapse.context.assembly import ContextAssemblyEngine
 
 engine = ContextAssemblyEngine(graph_registry)
+
+# Doctor sees full patient context
 result = engine.assemble(
-    purpose="trade_decision",
-    requester={"user_id": "fm_123", "roles": ["fund_manager"], "scoped_ids": ["client_abc"]},
-    params={"stock": "TCS", "client_id": "client_abc", "portfolio_id": "pf_xyz"},
+    purpose="patient_review",
+    requester={"user_id": "dr_123", "roles": ["doctor"], "scoped_ids": ["patient_abc"]},
+    params={"patient_id": "patient_abc"},
 )
-# → contexts: {stock, client, portfolio, sector, rules}
-# → redacted: [] (FM has access to all via scoped_ids)
-# → fusion: {decision: "BUY", score: 0.45}
+# → contexts: {patient_record, lab_results, vitals, medications}
+# → redacted: []
+
+# Receptionist sees only non-sensitive data
+result = engine.assemble(
+    purpose="patient_review",
+    requester={"user_id": "rec_456", "roles": ["receptionist"]},
+    params={"patient_id": "patient_abc"},
+)
+# → contexts: {patient_record}   (name + appointment only)
+# → redacted: ["lab_results", "vitals", "medications"]
 ```
 
 ---
